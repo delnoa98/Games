@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Game Hangar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Stardos+Stencil:wght@700&family=Special+Elite&display=swap">
+<style>
+:root{--bg:#14120e;--paper:#e9dcbc;--dim:rgba(233,220,188,.62);--line:rgba(233,220,188,.22);--brass:#d99a3a;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--paper);font-family:'Special Elite','Courier New',monospace;
+  padding:max(28px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left))}
+main{max-width:860px;margin:0 auto;display:grid;gap:22px}
+.eyebrow{font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--brass)}
+h1{margin:0;font-family:'Stardos Stencil',Impact,sans-serif;font-size:clamp(44px,10vw,80px);line-height:.9;letter-spacing:.02em}
+p{margin:0;line-height:1.55;color:var(--dim);max-width:56ch}
+.games{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+a.game{display:grid;gap:10px;padding:20px;border:1px solid var(--line);color:inherit;text-decoration:none;background:rgba(233,220,188,.03)}
+a.game:hover,a.game:focus-visible{border-color:var(--paper);outline:none;background:rgba(233,220,188,.07)}
+a.game h2{margin:0;font-family:'Stardos Stencil',Impact,sans-serif;font-size:32px;letter-spacing:.03em}
+a.game span{font-size:13px;color:var(--brass);letter-spacing:.12em;text-transform:uppercase}
+footer{font-size:12px;color:var(--dim);border-top:1px dashed var(--line);padding-top:14px}
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">Free browser games</div>
+  <h1>Game Hangar</h1>
+  <p>Play right in your browser on a phone or computer. Nothing to install. On a phone, turn it sideways and tap once to turn on sound.</p>
+  <div class="games">
+    <a class="game" href="skyward-aces/">
+      <h2>Skyward Aces</h2>
+      <p>WWII dogfighting shot like an old newsreel. Fly an 8-mission campaign in four classic fighters, or chase a high score in endless mode.</p>
+      <span>Play →</span>
+    </a>
+    <a class="game" href="night-orbit/">
+      <h2>Night Orbit</h2>
+      <p>Circle a battlefield at night in a gunship. Look down through a thermal camera, pick your guns, dodge missiles and protect the troops below.</p>
+      <span>Play →</span>
+    </a>
+  </div>
+  <footer>Progress and high scores are saved on your own device.</footer>
+</main>
+</body>
+</html>
