@@ -42,6 +42,15 @@ button:disabled{cursor:default}
 #score{font-family:var(--display);font-weight:700;font-size:28px;line-height:1;color:var(--paper);letter-spacing:.04em}
 .sub{font-size:12px;letter-spacing:.06em;color:var(--paper);margin-top:4px}
 #objLbl{font-size:12px;line-height:1.5;color:var(--brass);margin-top:3px}
+#chLbl{font-size:11px;line-height:1.45;color:var(--paper-dim);margin-top:3px}
+#chLbl div.done{color:#b9d68a}
+.hprev{position:relative;height:150px;border:1px solid rgba(42,35,26,.4);background:radial-gradient(ellipse at 50% 40%,#3a3a34,#16130e 80%);overflow:hidden}
+.hprev canvas{display:block;width:100%;height:100%;filter:sepia(.25) contrast(1.05);touch-action:none;cursor:grab}
+.hprev span{position:absolute;left:8px;bottom:6px;font-size:11px;letter-spacing:.12em;color:rgba(233,220,188,.7);pointer-events:none}
+.maps{display:flex;flex-wrap:wrap;gap:6px}
+.mapb{padding:6px 10px;border:1px solid rgba(42,35,26,.35);font-size:13px;color:var(--type)}
+.mapb[aria-pressed="true"]{border:2px solid var(--type);background:rgba(42,35,26,.08);padding:5px 9px}
+.compact .hprev{height:120px}
 #feed{display:grid;gap:3px;justify-items:end;margin-top:6px}
 #feed div{font-size:13px;color:var(--paper);animation:feed 2.8s forwards}
 #feed div.bad{color:#ff8a6a}
@@ -96,12 +105,13 @@ button:disabled{cursor:default}
 #joyBase::after{top:50%;left:12px;right:12px;height:1px}
 #joyKnob{position:absolute;left:50%;top:50%;width:62px;height:62px;margin:-31px 0 0 -31px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f3e8cc,#b8a780);box-shadow:0 3px 10px rgba(0,0,0,.45);z-index:1}
 #joyHint{position:absolute;left:calc(24px + env(safe-area-inset-left,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));font-size:12px;color:var(--paper);pointer-events:none}
-.btns{position:absolute;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:auto auto;grid-template-areas:". sec" "boost fire";gap:10px 14px;align-items:end;justify-items:center;pointer-events:auto}
+.btns{position:absolute;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:auto auto;grid-template-areas:"bomb sec" "boost fire";gap:10px 14px;align-items:end;justify-items:center;pointer-events:auto}
 .btns button{touch-action:none;border-radius:50%;display:grid;place-items:center;letter-spacing:.08em;font-size:12px;text-shadow:none;text-align:center;line-height:1.15}
 #btnFire{grid-area:fire;width:94px;height:94px;border:3px solid var(--brass);background:radial-gradient(circle,rgba(217,154,58,.5),rgba(217,154,58,.18));color:var(--paper);font-family:var(--display);font-weight:700;font-size:17px}
 #btnBoost{grid-area:boost;width:64px;height:64px;border:2px solid rgba(233,220,188,.6);background:rgba(22,19,14,.38)}
 #btnSec{grid-area:sec;width:70px;height:70px;border:2px solid rgba(233,220,188,.75);background:rgba(22,19,14,.45)}
-#btnSec:disabled{opacity:.35}
+#btnSec:disabled,#btnBomb:disabled{opacity:.35}
+#btnBomb{grid-area:bomb;width:70px;height:70px;border:2px solid rgba(233,220,188,.75);background:rgba(22,19,14,.45)}
 .btns button.down{transform:scale(.93);filter:brightness(1.35)}
 @media (hover:hover) and (pointer:fine){#joyZone,.btns,#joyHint{display:none}}
 #hit{position:fixed;inset:0;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,transparent 45%,rgba(150,30,15,.6))}
@@ -211,6 +221,7 @@ button:disabled{cursor:default}
     <div id="score">0</div>
     <div class="sub" id="waveLbl"></div>
     <div id="objLbl"></div>
+    <div id="chLbl"></div>
     <div id="feed"></div>
   </div>
   <button id="btnPause" aria-label="Pause"><span></span></button>
@@ -226,6 +237,7 @@ button:disabled{cursor:default}
   <div id="joyZone"><div id="joyBase"><div id="joyKnob"></div></div></div>
   <div id="joyHint">Drag to steer · guns fire when lined up</div>
   <div class="btns">
+    <button id="btnBomb">BOMB<br>2</button>
     <button id="btnSec">ROCKET<br>6</button>
     <button id="btnBoost">BOOST</button>
     <button id="btnFire">FIRE</button>
@@ -272,6 +284,9 @@ button:disabled{cursor:default}
       <p class="lede" id="bText"></p>
       <h2>Objectives</h2>
       <ul class="goals" id="bGoals"></ul>
+      <h2>Bonus challenges</h2>
+      <ul class="goals" id="bCh"></ul>
+      <div id="bMapBox" hidden><h2>Map</h2><div class="maps" id="bMaps"></div></div>
     </div>
     <div class="col">
       <h2>Your aircraft</h2>
@@ -291,14 +306,17 @@ button:disabled{cursor:default}
       <div class="hplanes" id="hPlanes"></div>
     </div>
     <div class="col">
+      <div class="hprev" id="hPrev"><span>Drag to spin</span></div>
       <h2 class="hname" id="hName"></h2>
       <p class="hinfo" id="hInfo"></p>
       <div class="row" id="hPlaneBuy"></div>
       <h2>Guns</h2>
       <div class="hguns" id="hGuns"></div>
       <h2>Missiles</h2>
-      <p class="hinfo">Missiles you buy fit every aircraft. Higher-tier planes can lock several targets at once.</p>
+      <p class="hinfo">Every aircraft carries one missile type and one bomb type at the same time. What you buy here fits every plane. Higher-tier planes lock several targets at once.</p>
       <div class="hguns" id="hMissiles"></div>
+      <h2>Bombs</h2>
+      <div class="hguns" id="hBombs"></div>
       <div class="row"><button class="primary" id="btnHDone">Done</button></div>
     </div>
   </div>
@@ -324,6 +342,7 @@ button:disabled{cursor:default}
     <div class="tag"><span>After-action report</span><span id="oTag"></span></div>
     <h1 id="oTitle">Mission accomplished</h1>
     <p class="reason" id="oReason"></p>
+    <p class="reason" id="oCh"></p>
     <div class="stars" id="oStars"></div>
     <dl class="stats">
       <div><dt>Score</dt><dd id="oScore">0</dd></div>
@@ -355,7 +374,8 @@ const store = {
   set(k,v){ try{ localStorage.setItem('skyward.'+k, JSON.stringify(v)); }catch(e){} }
 };
 const FILMS = ['Newsreel', 'Faded color', 'Modern'];
-const settings = { invert: store.get('invert2', true), sound: store.get('sound', true), auto: store.get('auto', true), assist: store.get('assist', true), film: store.get('film', 0), plane: store.get('plane', 'p51') };
+const settings = { invert: store.get('invert2', true), sound: store.get('sound', true), auto: store.get('auto', true), assist: store.get('assist', true), film: store.get('film', 0), plane: store.get('plane', 'p51'), dfMap: store.get('dfMap', 'islands') };
+if (!['islands','channel','desert','fjord','alpine'].includes(settings.dfMap)) settings.dfMap = 'islands';
 const progress = Object.assign({ done:0, stars:[], money:250, planes:[], guns:{}, equip:{}, missiles:[], missile:'stock' }, store.get('progress', {}));
 function saveProgress(){ store.set('progress', progress); }
 let best = store.get('best', 0);
@@ -439,7 +459,7 @@ const sky = new THREE.Mesh(new THREE.SphereGeometry(5000, 32, 16), new THREE.Sha
 scene.add(sky);
 
 const oceanMat = new THREE.ShaderMaterial({
-  uniforms:{ t:{value:0}, sunDir:{value:SUN}, camPos:{value:new V3()}, fogColor:{value:HORIZON}, sunCol:{value:SUNCOL}, fogNear:{value:380}, fogFar:{value:3300} },
+  uniforms:{ t:{value:0}, sunDir:{value:SUN}, camPos:{value:new V3()}, fogColor:{value:HORIZON}, sunCol:{value:SUNCOL}, fogNear:{value:380}, fogFar:{value:3300}, deep:{value:new THREE.Color(0.05,0.19,0.25)} },
   vertexShader:[
     'uniform float t; varying vec3 vW;',
     'void main(){ vec4 w = modelMatrix*vec4(position,1.0);',
@@ -447,7 +467,7 @@ const oceanMat = new THREE.ShaderMaterial({
     ' vW = w.xyz; gl_Position = projectionMatrix*viewMatrix*w; }'
   ].join('\n'),
   fragmentShader:[
-    'uniform float t; uniform vec3 sunDir; uniform vec3 camPos; uniform vec3 fogColor; uniform vec3 sunCol; uniform float fogNear; uniform float fogFar; varying vec3 vW;',
+    'uniform float t; uniform vec3 sunDir; uniform vec3 camPos; uniform vec3 fogColor; uniform vec3 sunCol; uniform float fogNear; uniform float fogFar; uniform vec3 deep; varying vec3 vW;',
     'float hash(vec2 p){ return fract(sin(dot(p, vec2(41.3,289.1)))*43758.5453); }',
     'float noise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f); return mix(mix(hash(i), hash(i+vec2(1,0)), f.x), mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), f.x), f.y); }',
     'void main(){ float x = vW.x, z = vW.z;',
@@ -456,7 +476,7 @@ const oceanMat = new THREE.ShaderMaterial({
     ' vec3 n = normalize(vec3(-dx, 1.0, -dz));',
     ' vec3 v = normalize(camPos - vW); float dist = length(camPos - vW);',
     ' float fres = pow(1.0 - max(dot(n, v), 0.0), 4.0);',
-    ' vec3 deep = vec3(0.05,0.19,0.25); vec3 sky = mix(fogColor, vec3(0.55,0.68,0.76), 0.5);',
+    ' vec3 sky = mix(fogColor, vec3(0.55,0.68,0.76), 0.5);',
     ' vec3 col = mix(deep, sky, clamp(fres*0.9 + 0.05, 0.0, 1.0));',
     ' float foam = smoothstep(0.78, 0.95, noise(vW.xz*0.05 + vec2(t*0.05, t*0.03))*noise(vW.xz*0.13 - t*0.04));',
     ' col = mix(col, vec3(0.86,0.9,0.9), foam*0.45*(1.0 - smoothstep(200.0, 900.0, dist)));',
@@ -469,7 +489,8 @@ const oceanMat = new THREE.ShaderMaterial({
 const oceanGeo = new THREE.PlaneGeometry(9000, 9000, 180, 180); oceanGeo.rotateX(-Math.PI/2);
 const ocean = new THREE.Mesh(oceanGeo, oceanMat); scene.add(ocean);
 
-const cloudMats = [];
+const cloudMats = [], tmpC = new THREE.Color();
+let MAP = null, baseHemi = 0.75;
 function setTimeOfDay(hour){
   const k = clamp((hour - 5.5)/14, 0, 1), e = Math.sin(k*Math.PI);
   const elev = 0.05 + e*0.95, az = (k - 0.5)*Math.PI*1.1 + Math.PI;
@@ -481,7 +502,11 @@ function setTimeOfDay(hour){
   sunLight.color.copy(SUNCOL); sunLight.intensity = 0.7 + 0.45*e;
   sunLight.position.copy(SUN).multiplyScalar(1000);
   hemi.intensity = 0.5 + 0.3*e;
+  if (MAP && MAP.tint){ tmpC.setRGB(MAP.tint[0], MAP.tint[1], MAP.tint[2]); HORIZON.lerp(tmpC, MAP.tintAmt); ZENITH.lerp(tmpC.multiplyScalar(0.75), MAP.tintAmt*0.8); }
+  if (MAP && MAP.dim){ sunLight.intensity *= MAP.dim; hemi.intensity *= 0.6 + 0.4*MAP.dim; SUNCOL.multiplyScalar(MAP.dim); }
+  baseHemi = hemi.intensity;
   scene.fog.color.copy(HORIZON);
+  if (MAP){ scene.fog.near = MAP.fog[0]; scene.fog.far = MAP.fog[1]; oceanMat.uniforms.fogNear.value = MAP.fog[0]; oceanMat.uniforms.fogFar.value = MAP.fog[1] + 300; }
   if (cloudMats.length){
     cloudMats[0].color.setRGB(1, lerp(1, 0.86, warm), lerp(1, 0.74, warm));
     cloudMats[1].color.setRGB(lerp(0.9, 0.86, warm), lerp(0.92, 0.76, warm), lerp(0.94, 0.68, warm));
@@ -489,80 +514,228 @@ function setTimeOfDay(hour){
   }
 }
 
-/* ---------- world: harbor, named islands, islands, trees, clouds ---------- */
+/* ---------- maps ---------- */
+const MAPS = {
+  islands: { name:'Hollis Islands', blurb:'Open sea, green islands and the harbor at Port Hollis', water:true, deep:[0.05,0.19,0.25], fog:[380,3000], base:'port', baseName:'Port Hollis', top:0x58703f, tree:0x2f4a26 },
+  channel: { name:'Stormy Channel', blurb:'Rain, heavy cloud and white chalk cliffs', water:true, deep:[0.07,0.13,0.14], tint:[0.6,0.63,0.63], tintAmt:0.7, dim:0.62, fog:[220,1800], weather:'rain', base:'port', baseName:'Port Hollis', top:0x4e6440, tree:0x2a3d24 },
+  desert:  { name:'Red Rock Desert', blurb:'Dry canyon country with towering mesas', water:false, ground:[0.74,0.56,0.38], tint:[0.95,0.8,0.62], tintAmt:0.42, fog:[420,3200], base:'airfield', baseName:'Mesa Airfield', top:0xb08a5c, tree:0x6b6a3a },
+  fjord:   { name:'Frost Fjord', blurb:'Ice-cold water between snowy mountains, with drifting icebergs', water:true, deep:[0.03,0.11,0.16], tint:[0.82,0.87,0.93], tintAmt:0.5, fog:[330,2500], weather:'snow', base:'port', baseName:'Nordvik Harbor', top:0xdfe3e6, tree:0x24342a },
+  alpine:  { name:'Alpine Valley', blurb:'A green valley ringed by snow-capped peaks', water:false, ground:[0.34,0.46,0.26], tint:[0.76,0.85,0.93], tintAmt:0.3, fog:[450,3400], base:'airfield', baseName:'Valley Airfield', top:0x52693c, tree:0x203a22 },
+};
+const MAP_ORDER = ['islands', 'channel', 'desert', 'fjord', 'alpine'];
+const world = new THREE.Group(); scene.add(world);
 const islands = [];
 const NAMED = {};
 const treePts = [];
 const HARBOR = { x:0, z:0, r:190, h:14, flat:true, name:'Port Hollis' };
-(function buildWorld(){
-  const sandMat = new THREE.MeshLambertMaterial({ color:0xcdb88c });
-  const hillMat = new THREE.MeshLambertMaterial({ vertexColors:true, flatShading:true });
-  const cSand = new THREE.Color(0xc4ad7f), cGreen = new THREE.Color(0x4a6a37), cDeep = new THREE.Color(0x35502a), cRock = new THREE.Color(0x77736a);
-  function hill(x, z, r, h, sd){
-    const geo = new THREE.ConeGeometry(r, h, 14, 5); geo.translate(0, h/2 - 4, 0);
-    const pos = geo.attributes.position, cols = [];
-    for (let i=0;i<pos.count;i++){
-      const px = pos.getX(i), py = pos.getY(i), pz = pos.getZ(i), ang = Math.atan2(pz, px);
-      const f = 1 + 0.17*Math.sin(ang*3 + sd)*Math.cos(py*0.04 + sd) + 0.08*Math.sin(ang*7 + sd*2);
-      pos.setX(i, px*f); pos.setZ(i, pz*f);
-      const kk = (py + 4)/h;
-      const c = kk < 0.08 ? cSand : kk > 0.72 && h > 140 ? cRock : (kk > 0.4 ? cDeep : cGreen);
-      cols.push(c.r, c.g, c.b);
-    }
-    geo.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
-    geo.computeVertexNormals();
-    const m = new THREE.Mesh(geo, hillMat); m.position.set(x, 0, z); m.rotation.y = sd;
-    const beach = new THREE.Mesh(new THREE.CylinderGeometry(r*1.12, r*1.22, 6, 20), sandMat); beach.position.set(x, -2.2, z);
-    scene.add(m, beach);
-    const isl = { x, z, r, h };
-    islands.push(isl);
-    const nt = Math.round(r*0.35);
+let curMapId = null;
+const groundGeo = new THREE.PlaneGeometry(14000, 14000, 140, 140); groundGeo.rotateX(-Math.PI/2);
+const ground = new THREE.Mesh(groundGeo, new THREE.MeshLambertMaterial({ vertexColors:true })); ground.position.y = -0.5; ground.visible = false; scene.add(ground);
+function paintGround(c){
+  const pos = groundGeo.attributes.position, cols = [];
+  for (let i=0;i<pos.count;i++){
+    const x = pos.getX(i), z = pos.getZ(i);
+    const n = 0.5 + 0.22*Math.sin(x*0.004 + z*0.003) + 0.16*Math.sin(x*0.011 - z*0.009 + 1.3) + 0.12*Math.sin((x + z)*0.023) + 0.08*Math.sin(x*0.05)*Math.sin(z*0.047);
+    const k = 0.78 + 0.36*n;
+    cols.push(c[0]*k, c[1]*k, c[2]*k);
+  }
+  groundGeo.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
+}
+const sandMat = new THREE.MeshLambertMaterial({ color:0xcdb88c });
+const hillMat = new THREE.MeshLambertMaterial({ vertexColors:true, flatShading:true });
+const PALETTES = {
+  island: { low:0xc4ad7f, mid:0x4a6a37, high:0x35502a, peak:0x77736a, beach:true },
+  snow:   { low:0x55585a, mid:0x6a6e70, high:0x8a8e90, peak:0xf2f4f6, beach:false, snowAt:0.5 },
+  alpine: { low:0x4a6a37, mid:0x35502a, high:0x7a766c, peak:0xf2f4f6, beach:false, snowAt:0.68 },
+  ice:    { low:0xdfe8ee, mid:0xeef3f6, high:0xf6f9fb, peak:0xffffff, beach:false },
+};
+function hill(x, z, r, h, sd, pal){
+  pal = pal || PALETTES.island;
+  const geo = new THREE.ConeGeometry(r, h, 14, 5); geo.translate(0, h/2 - 4, 0);
+  const pos = geo.attributes.position, cols = [];
+  const cl = new THREE.Color(pal.low), cm = new THREE.Color(pal.mid), ch = new THREE.Color(pal.high), cp = new THREE.Color(pal.peak);
+  for (let i=0;i<pos.count;i++){
+    const px = pos.getX(i), py = pos.getY(i), pz = pos.getZ(i), ang = Math.atan2(pz, px);
+    const f = 1 + 0.17*Math.sin(ang*3 + sd)*Math.cos(py*0.04 + sd) + 0.08*Math.sin(ang*7 + sd*2);
+    pos.setX(i, px*f); pos.setZ(i, pz*f);
+    const kk = (py + 4)/h;
+    const c = pal.snowAt ? (kk > pal.snowAt ? cp : kk > pal.snowAt*0.6 ? ch : kk > 0.12 ? cm : cl) : (kk < 0.08 ? cl : kk > 0.72 && h > 140 ? cp : (kk > 0.4 ? ch : cm));
+    cols.push(c.r, c.g, c.b);
+  }
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
+  geo.computeVertexNormals();
+  const m = new THREE.Mesh(geo, hillMat); m.position.set(x, 0, z); m.rotation.y = sd; world.add(m);
+  if (pal.beach){ const beach = new THREE.Mesh(new THREE.CylinderGeometry(r*1.12, r*1.22, 6, 20), sandMat); beach.position.set(x, -2.2, z); world.add(beach); }
+  const isl = { x, z, r, h };
+  islands.push(isl);
+  if (pal !== PALETTES.ice){
+    const nt = Math.round(r*0.3);
     for (let i=0;i<nt;i++){
       const a = srand()*Math.PI*2, d = Math.sqrt(srand())*r*0.8;
       const y = h*(1 - d/(r*0.95)) - 4;
-      if (y < 3 || (h > 140 && y > h*0.7)) continue;
+      if (y < 3 || y > h*(pal.snowAt ? pal.snowAt*0.6 : 0.7)) continue;
       treePts.push(x + Math.cos(a)*d, y, z + Math.sin(a)*d, srange(0.7, 1.3));
     }
-    return isl;
   }
+  return isl;
+}
+function mesa(x, z, r, h, cols){
+  const geo = new THREE.CylinderGeometry(r*0.86, r, h, 16, 6); geo.translate(0, h/2 - 1, 0);
+  const pos = geo.attributes.position, cc = [], c1 = new THREE.Color(cols[0]), c2 = new THREE.Color(cols[1]), c3 = new THREE.Color(cols[2]);
+  const sd = srand()*10;
+  for (let i=0;i<pos.count;i++){
+    const px = pos.getX(i), py = pos.getY(i), pz = pos.getZ(i), ang = Math.atan2(pz, px);
+    const f = 1 + 0.1*Math.sin(ang*4 + sd) + 0.06*Math.sin(ang*9 + sd*2);
+    if (py > -0.5 && py < h - 1.5){ pos.setX(i, px*f); pos.setZ(i, pz*f); }
+    const band = Math.floor((py/h)*7) % 3, c = py >= h - 1.2 ? c3 : band === 0 ? c1 : band === 1 ? c2 : c1;
+    cc.push(c.r, c.g, c.b);
+  }
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(cc, 3)); geo.computeVertexNormals();
+  const m = new THREE.Mesh(geo, hillMat); m.position.set(x, 0, z); world.add(m);
+  const isl = { x, z, r, h, flat:true };
+  islands.push(isl);
+  return isl;
+}
+function buildBase(kind, M){
   const H = HARBOR;
-  const hg = new THREE.Group(); hg.position.set(H.x, 0, H.z); scene.add(hg);
-  const top = new THREE.Mesh(new THREE.CylinderGeometry(H.r*0.96, H.r, H.h + 4, 28), new THREE.MeshLambertMaterial({ color:0x58703f })); top.position.y = H.h/2 - 2; hg.add(top);
-  const shore = new THREE.Mesh(new THREE.CylinderGeometry(H.r*1.04, H.r*1.12, 5, 28), sandMat); shore.position.y = -1.5; hg.add(shore);
-  const concrete = new THREE.MeshLambertMaterial({ color:0x9b978c }), roof = new THREE.MeshLambertMaterial({ color:0x6d4e3a }), wood = new THREE.MeshLambertMaterial({ color:0x6a5440 }), whiteM = new THREE.MeshLambertMaterial({ color:0xe8e4da }), darkM = new THREE.MeshLambertMaterial({ color:0x3a3a38 });
-  const apron = new THREE.Mesh(new THREE.BoxGeometry(H.r*1.3, 0.6, 90), concrete); apron.position.set(0, H.h + 0.3, -H.r*0.55); hg.add(apron);
-  for (let i=0;i<5;i++){
-    const w = new THREE.Group(); const bx = -110 + i*55;
-    const body = new THREE.Mesh(new THREE.BoxGeometry(24, 9, 40), concrete); body.position.y = 4.5; w.add(body);
-    const rg = new THREE.CylinderGeometry(14, 14, 40, 3, 1); rg.rotateX(Math.PI/2); rg.rotateZ(Math.PI/6); rg.scale(0.96, 0.35, 1);
-    const rf = new THREE.Mesh(rg, roof); rf.position.y = 11; w.add(rf);
-    w.position.set(bx, H.h, -H.r*0.55 + 10); hg.add(w);
+  H.name = M.baseName; H.h = kind === 'port' ? 14 : 6;
+  const hg = new THREE.Group(); hg.position.set(H.x, 0, H.z); world.add(hg);
+  const top = new THREE.Mesh(new THREE.CylinderGeometry(H.r*0.96, H.r, H.h + 4, 28), new THREE.MeshLambertMaterial({ color:M.top })); top.position.y = H.h/2 - 2; hg.add(top);
+  if (kind === 'port'){ const shore = new THREE.Mesh(new THREE.CylinderGeometry(H.r*1.04, H.r*1.12, 5, 28), M.weather === 'snow' ? new THREE.MeshLambertMaterial({ color:0x8a8a86 }) : sandMat); shore.position.y = -1.5; hg.add(shore); }
+  const concrete = new THREE.MeshLambertMaterial({ color:0x9b978c }), roof = new THREE.MeshLambertMaterial({ color:M.weather === 'snow' ? 0xeef0f2 : 0x6d4e3a }), wood = new THREE.MeshLambertMaterial({ color:0x6a5440 }), whiteM = new THREE.MeshLambertMaterial({ color:0xe8e4da }), darkM = new THREE.MeshLambertMaterial({ color:0x3a3a38 });
+  if (kind === 'port'){
+    const apron = new THREE.Mesh(new THREE.BoxGeometry(H.r*1.3, 0.6, 90), concrete); apron.position.set(0, H.h + 0.3, -H.r*0.55); hg.add(apron);
+    for (let i=0;i<5;i++){
+      const w = new THREE.Group(); const bx = -110 + i*55;
+      const body = new THREE.Mesh(new THREE.BoxGeometry(24, 9, 40), concrete); body.position.y = 4.5; w.add(body);
+      const rg = new THREE.CylinderGeometry(14, 14, 40, 3, 1); rg.rotateX(Math.PI/2); rg.rotateZ(Math.PI/6); rg.scale(0.96, 0.35, 1);
+      const rf = new THREE.Mesh(rg, roof); rf.position.y = 11; w.add(rf);
+      w.position.set(bx, H.h, -H.r*0.55 + 10); hg.add(w);
+    }
+    for (let i=0;i<3;i++){ const t = new THREE.Mesh(new THREE.CylinderGeometry(9, 9, 12, 16), whiteM); t.position.set(60 + i*24, H.h + 6, 40); hg.add(t); }
+    const lh = new THREE.Mesh(new THREE.CylinderGeometry(3, 4.5, 32, 12), whiteM); lh.position.set(-H.r*0.82, H.h + 16, 60); hg.add(lh);
+    const lt = new THREE.Mesh(new THREE.CylinderGeometry(3.6, 3.6, 4, 12), darkM); lt.position.set(-H.r*0.82, H.h + 34, 60); hg.add(lt);
+    for (const px of [-60, 0, 60]){ const pier = new THREE.Mesh(new THREE.BoxGeometry(8, 3, 90), wood); pier.position.set(px, 1.2, -H.r - 38); hg.add(pier); }
+    const crane = new THREE.Group();
+    const cb = new THREE.Mesh(new THREE.BoxGeometry(3, 30, 3), darkM); cb.position.y = 15; crane.add(cb);
+    const ca = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 34), darkM); ca.position.set(0, 30, -12); crane.add(ca);
+    crane.position.set(-30, H.h, -H.r + 8); hg.add(crane);
+  } else {
+    const runway = new THREE.Mesh(new THREE.BoxGeometry(24, 0.5, H.r*1.75), new THREE.MeshLambertMaterial({ color:0x55524c })); runway.position.set(-30, H.h + 0.25, 0); hg.add(runway);
+    for (let i=-6;i<=6;i++){ const st = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.55, 9), whiteM); st.position.set(-30, H.h + 0.3, i*24); hg.add(st); }
+    for (let i=0;i<3;i++){
+      const hgg = new THREE.CylinderGeometry(15, 15, 34, 14, 1, false, 0, Math.PI); hgg.rotateX(Math.PI/2); hgg.rotateZ(Math.PI/2);
+      const hangar = new THREE.Mesh(hgg, roof); hangar.position.set(60, H.h, -70 + i*50); hg.add(hangar);
+    }
+    const tower = new THREE.Mesh(new THREE.BoxGeometry(10, 22, 10), concrete); tower.position.set(40, H.h + 11, 90); hg.add(tower);
+    const cab = new THREE.Mesh(new THREE.BoxGeometry(13, 5, 13), new THREE.MeshLambertMaterial({ color:0x8fb0bb })); cab.position.set(40, H.h + 24.5, 90); hg.add(cab);
+    const sock = new THREE.Mesh(new THREE.ConeGeometry(1.4, 6, 8), new THREE.MeshLambertMaterial({ color:0xd77a3a })); sock.rotation.z = Math.PI/2; sock.position.set(-80, H.h + 14, -120); hg.add(sock);
   }
-  for (let i=0;i<3;i++){ const t = new THREE.Mesh(new THREE.CylinderGeometry(9, 9, 12, 16), whiteM); t.position.set(60 + i*24, H.h + 6, 40); hg.add(t); }
-  const lh = new THREE.Mesh(new THREE.CylinderGeometry(3, 4.5, 32, 12), whiteM); lh.position.set(-H.r*0.82, H.h + 16, 60); hg.add(lh);
-  const lt = new THREE.Mesh(new THREE.CylinderGeometry(3.6, 3.6, 4, 12), darkM); lt.position.set(-H.r*0.82, H.h + 34, 60); hg.add(lt);
-  for (const px of [-60, 0, 60]){
-    const pier = new THREE.Mesh(new THREE.BoxGeometry(8, 3, 90), wood); pier.position.set(px, 1.2, -H.r - 38); hg.add(pier);
-  }
-  const crane = new THREE.Group();
-  const cb = new THREE.Mesh(new THREE.BoxGeometry(3, 30, 3), darkM); cb.position.y = 15; crane.add(cb);
-  const ca = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 34), darkM); ca.position.set(0, 30, -12); crane.add(ca);
-  crane.position.set(-30, H.h, -H.r + 8); hg.add(crane);
-  for (let i=0;i<26;i++){ const a = srand()*Math.PI*2, d = srange(0.3, 0.88)*H.r; const x = Math.cos(a)*d, z = Math.sin(a)*d; if (z < -60) continue; treePts.push(H.x + x, H.h, H.z + z, srange(0.8, 1.2)); }
+  for (let i=0;i<22;i++){ const a = srand()*Math.PI*2, d = srange(0.4, 0.9)*H.r; const x = Math.cos(a)*d, z = Math.sin(a)*d; if (z < -60 || Math.abs(x + 30) < 30) continue; treePts.push(H.x + x, H.h, H.z + z, srange(0.8, 1.2)); }
   islands.push(H);
   NAMED.harbor = H;
-  NAMED.gull = hill(1050, 950, 120, 42, 2.2); NAMED.gull.name = 'Gull Island';
-  NAMED.arden = hill(-1250, 1450, 175, 210, 4.1); NAMED.arden.name = 'Cape Arden';
-  const tg = new THREE.ConeGeometry(2.6, 10, 6); tg.translate(0, 5, 0);
-  const trees = new THREE.InstancedMesh(tg, new THREE.MeshLambertMaterial({ color:0x2f4a26, flatShading:true }), treePts.length/4);
-  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new V3(), p = new V3();
-  for (let i=0;i<treePts.length/4;i++){ const sc = treePts[i*4+3]; p.set(treePts[i*4], treePts[i*4+1], treePts[i*4+2]); s.set(sc, sc*srange(0.8,1.3), sc); m4.compose(p, q, s); trees.setMatrixAt(i, m4); }
-  scene.add(trees);
-})();
+}
+const clearOf = (x, z, pad) => !islands.some(i => Math.hypot(x - i.x, z - i.z) < i.r + pad) && Math.hypot(x + 1250, z + 1050) > 380 && Math.hypot(x - 700, z + 300) > 380;
+function buildWorld(id){
+  if (curMapId === id) return;
+  curMapId = id; MAP = MAPS[id];
+  while (world.children.length) world.remove(world.children[0]);
+  islands.length = 0; treePts.length = 0; for (const k in NAMED) delete NAMED[k];
+  seed = 1943 + MAP_ORDER.indexOf(id)*7919;
+  ocean.visible = MAP.water; ground.visible = !MAP.water;
+  if (!MAP.water) paintGround(MAP.ground);
+  if (MAP.deep) oceanMat.uniforms.deep.value.setRGB(MAP.deep[0], MAP.deep[1], MAP.deep[2]);
+  buildBase(MAP.base, MAP);
+  if (id === 'islands'){
+    NAMED.gull = hill(1050, 950, 120, 42, 2.2); NAMED.gull.name = 'Gull Island';
+    NAMED.arden = hill(-1250, 1450, 175, 210, 4.1); NAMED.arden.name = 'Cape Arden';
+  } else if (id === 'channel'){
+    NAMED.gull = hill(1000, 900, 95, 38, 1.4); NAMED.gull.name = 'Gull Rock';
+    NAMED.arden = mesa(-1250, 1450, 190, 95, [0xe8e6dc, 0xd6d3c6, 0x4e6a3a]); NAMED.arden.name = 'Arden Head';
+    for (let x = -2600; x <= 2600; x += 260){ const zz = 2150 + Math.sin(x*0.003)*140; if (Math.hypot(x + 1250, zz - 1450) < 420) continue; mesa(x, zz, srange(150, 200), srange(70, 115), [0xeceae0, 0xd9d6ca, 0x4e6a3a]); }
+  } else if (id === 'desert'){
+    NAMED.gull = mesa(1050, 950, 130, 70, [0xa4583a, 0xc27a4e, 0x9a6a46]); NAMED.gull.name = 'Red Mesa';
+    NAMED.arden = mesa(-1250, 1450, 190, 150, [0x96503a, 0xb86e48, 0x8e6444]); NAMED.arden.name = 'Butte Arden';
+    let n = 0, guard = 0;
+    while (n < 14 && guard++ < 500){
+      const a = srand()*Math.PI*2, d = srange(500, 2500), x = Math.cos(a)*d, z = Math.sin(a)*d;
+      const r = srange(25, 110); if (!clearOf(x, z, r + 120)) continue;
+      mesa(x, z, r, r < 50 ? srange(60, 130) : srange(40, 90), [0xa4583a, 0xc98250, 0x9a6a46]); n++;
+    }
+    for (let i=0;i<260;i++){ const x = srange(-2600, 2600), z = srange(-2600, 2600); if (islands.some(isl => Math.hypot(x - isl.x, z - isl.z) < isl.r + 10)) continue; treePts.push(x, 0, z, srange(0.35, 0.6)); }
+  } else if (id === 'fjord'){
+    NAMED.gull = hill(1050, 950, 110, 46, 2.0, PALETTES.snow); NAMED.gull.name = 'Skerry Isle';
+    NAMED.arden = hill(-1250, 1450, 210, 300, 4.1, PALETTES.snow); NAMED.arden.name = 'Arden Peak';
+    for (const side of [-1, 1]) for (let x = -2800; x <= 2800; x += 330){
+      const zz = side*(2250 + srange(-120, 160)); if (Math.hypot(x + 1250, zz - 1450) < 500) continue;
+      hill(x, zz, srange(280, 380), srange(320, 520), srand()*10, PALETTES.snow);
+    }
+    let n = 0, guard = 0;
+    while (n < 9 && guard++ < 400){
+      const a = srand()*Math.PI*2, d = srange(450, 1800), x = Math.cos(a)*d, z = Math.sin(a)*d;
+      const r = srange(22, 45); if (!clearOf(x, z, r + 160)) continue;
+      hill(x, z, r, srange(10, 22), srand()*10, PALETTES.ice); n++;
+    }
+  } else if (id === 'alpine'){
+    NAMED.gull = hill(1050, 950, 160, 95, 2.0, PALETTES.alpine); NAMED.gull.name = 'Gull Ridge';
+    NAMED.arden = hill(-1250, 1450, 260, 420, 4.1, PALETTES.alpine); NAMED.arden.name = 'Arden Peak';
+    for (let k=0;k<16;k++){
+      const a = k/16*Math.PI*2 + srange(-0.08, 0.08), d = srange(2450, 2750), x = Math.cos(a)*d, z = Math.sin(a)*d;
+      if (Math.hypot(x + 1250, z - 1450) < 500) continue;
+      hill(x, z, srange(320, 460), srange(420, 600), srand()*10, PALETTES.alpine);
+    }
+    let n = 0, guard = 0;
+    while (n < 6 && guard++ < 300){
+      const a = srand()*Math.PI*2, d = srange(600, 1900), x = Math.cos(a)*d, z = Math.sin(a)*d;
+      const r = srange(110, 190); if (!clearOf(x, z, r + 150)) continue;
+      hill(x, z, r, srange(60, 140), srand()*10, PALETTES.alpine); n++;
+    }
+    for (let c=0;c<26;c++){ const cx = srange(-2200, 2200), cz = srange(-2200, 2200); for (let i=0;i<22;i++){ const x = cx + srange(-90, 90), z = cz + srange(-90, 90); if (islands.some(isl => Math.hypot(x - isl.x, z - isl.z) < isl.r + 5)) continue; treePts.push(x, 0, z, srange(0.8, 1.3)); } }
+  }
+  if (treePts.length){
+    const tg = new THREE.ConeGeometry(2.6, 10, 6); tg.translate(0, 5, 0);
+    const trees = new THREE.InstancedMesh(tg, new THREE.MeshLambertMaterial({ color:MAP.tree, flatShading:true }), treePts.length/4);
+    const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new V3(), p = new V3();
+    for (let i=0;i<treePts.length/4;i++){ const k = treePts[i*4+3]; p.set(treePts[i*4], treePts[i*4+1], treePts[i*4+2]); sc.set(k, k*srange(0.8,1.3), k); m4.compose(p, q, sc); trees.setMatrixAt(i, m4); }
+    world.add(trees);
+  }
+  setWeather(MAP.weather);
+}
+/* ---------- weather ---------- */
+const WX_N = 700, wxPos = new Float32Array(WX_N*6), wxP = new Float32Array(WX_N*3);
+const wxGeo = new THREE.BufferGeometry(), wxAttr = new THREE.BufferAttribute(wxPos, 3); wxGeo.setAttribute('position', wxAttr);
+const wxMat = new THREE.LineBasicMaterial({ color:0xdfe6ea, transparent:true, opacity:.35, fog:false });
+const wx = new THREE.LineSegments(wxGeo, wxMat); wx.frustumCulled = false; wx.visible = false; scene.add(wx);
+let wxKind = null, flashT = 0, boltT = 8;
+function setWeather(kind){
+  wxKind = kind || null; wx.visible = !!kind;
+  if (!kind) return;
+  wxMat.color.setHex(kind === 'snow' ? 0xffffff : 0xcfd8dc); wxMat.opacity = kind === 'snow' ? 0.75 : 0.32;
+  for (let i=0;i<WX_N;i++){ wxP[i*3] = rand(-90, 90); wxP[i*3+1] = rand(-60, 60); wxP[i*3+2] = rand(-90, 90); }
+}
+function updateWeather(dt){
+  if (!wxKind) return;
+  const c = camera.position, snow = wxKind === 'snow';
+  const fall = snow ? 9 : 70, wind = snow ? 3 : 14, len = snow ? 0.5 : 4.5;
+  for (let i=0;i<WX_N;i++){
+    let x = wxP[i*3], y = wxP[i*3+1], z = wxP[i*3+2];
+    y -= fall*dt; x += wind*dt + (snow ? Math.sin(time*1.3 + i)*dt*2 : 0);
+    if (y < -60) y += 120; if (x > 90) x -= 180;
+    wxP[i*3] = x; wxP[i*3+1] = y; wxP[i*3+2] = z;
+    const wx0 = c.x + x, wy0 = c.y + y, wz0 = c.z + z;
+    wxPos[i*6] = wx0; wxPos[i*6+1] = wy0; wxPos[i*6+2] = wz0;
+    wxPos[i*6+3] = wx0 - wind*len/fall*(snow ? 0.6 : 1); wxPos[i*6+4] = wy0 + len; wxPos[i*6+5] = wz0;
+  }
+  wxAttr.needsUpdate = true;
+  if (wxKind === 'rain'){
+    boltT -= dt;
+    if (boltT <= 0){ boltT = rand(7, 15); flashT = 0.35; noiseHit(2.6, 'lowpass', 300, 40, 0.5, rand(0.4, 1.5)); }
+    if (flashT > 0){ flashT -= dt; hemi.intensity = baseHemi + (flashT > 0.2 || (flashT > 0.08 && flashT < 0.14) ? 1.4 : 0); }
+    else hemi.intensity = baseHemi;
+  }
+}
 function groundAt(x, z){
-  const H = HARBOR;
-  if (Math.hypot(x - H.x, z - H.z) < H.r) return H.h;
-  for (const isl of islands){ if (isl.flat) continue; const d = Math.hypot(x - isl.x, z - isl.z); if (d < isl.r) return Math.max(0, isl.h*(1 - d/isl.r) - 4); }
+  for (const isl of islands){ const d = Math.hypot(x - isl.x, z - isl.z); if (d < isl.r) return isl.flat ? isl.h : Math.max(0, isl.h*(1 - d/isl.r) - 4); }
   return 0;
 }
 
@@ -707,7 +880,7 @@ function makeAircraft(look){
     const fd = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.9), decalMat(look.insig)); fd.rotation.y = sx*Math.PI/2; fd.position.set(sx*0.6*R, 0.05, -2.5*L); body.add(fd);
     for (let i=0;i<(look.guns || 3);i++){ const b = cyl(0.05, 0.05, 0.8, 6, dark); b.position.set(sx*(2.2 + i*0.35), -0.42*R + 0.15 + (2.2 + i*0.35)*0.09, 2.1); body.add(b); }
   }
-  g.userData = { body, props:[prop], ord:[] };
+  g.userData = { body, props:[prop], ord:[], ordB:[] };
   return g;
 }
 function makeP38(look){
@@ -731,7 +904,7 @@ function makeP38(look){
     const d = new THREE.Mesh(new THREE.PlaneGeometry(1.25, 1.25), decalMat('star')); d.rotation.x = -Math.PI/2; d.position.set(sx*6.2, -0.15 + 0.2 + 6.2*0.03, 0.4); body.add(d);
   }
   const stab = new THREE.Mesh(new THREE.BoxGeometry(7.6, 0.16, 1.4), skin); stab.position.set(0, 0.2, -7.1); body.add(stab);
-  g.userData = { body, props, ord:[] };
+  g.userData = { body, props, ord:[], ordB:[] };
   return g;
 }
 function makeModernJet(look){
@@ -763,7 +936,7 @@ function makeModernJet(look){
     const glow = new THREE.Mesh(new THREE.CircleGeometry(0.34, 14), new THREE.MeshBasicMaterial({ color:0xffa040 })); glow.rotation.y = Math.PI; glow.position.set(nx, 0, -7.71); body.add(glow);
   }
   const head = new THREE.Mesh(new THREE.SphereGeometry(0.2, 10, 8), mat(0x2a2a2a)); head.position.set(0, 0.66, 3.4); body.add(head);
-  g.userData = { body, props:[], ord:[], nozzles };
+  g.userData = { body, props:[], ord:[], ordB:[], nozzles };
   return g;
 }
 function makeMeteor(look){
@@ -787,30 +960,31 @@ function makeMeteor(look){
   const fin = new THREE.Mesh(finGeo(2.4, 2.2, 0.8), mat(P.camo[1], { roughness:.7, metalness:.15 })); fin.position.set(0, 0.2, -5.0); body.add(fin);
   const sg = wingGeo('taper', 5.2, 1.4, 0.14, 0); camo(sg, P.camo[0], P.camo[1], 0.5, 5);
   body.add(Object.assign(new THREE.Mesh(sg, skin), { position:new V3(0, 1.55, -5.7) }));
-  g.userData = { body, props:[], ord:[] };
+  g.userData = { body, props:[], ord:[], ordB:[] };
   return g;
 }
-function addOrdnance(g, sec, look){
+function addOrdnance(g, sec, look, list){
   const body = g.userData.body, R = look.rad || 0.9;
+  list = list || g.userData.ord;
   if (!sec || !sec.count) return;
   const ox = look.ordX || 3.0, yAt = x => -0.42*R - 0.38 + x*0.09;
   if (sec.kind === 'barrage'){
     for (const sx of [-1, 1]){
       const pod = cyl(0.32, 0.32, 2.0, 12, mat(0x4a4d48, { metalness:.4 })); pod.position.set(sx*ox, yAt(ox) - 0.15, 0.9); body.add(pod);
       const face = new THREE.Mesh(new THREE.CircleGeometry(0.3, 12), mat(0x1a1a1a)); face.position.set(0, 0, 1.01); pod.add(face);
-      g.userData.ord.push(pod);
+      list.push(pod);
     }
   } else if (sec.type === 'rocket'){
     const n = Math.min(sec.count, 8), big = sec.kind === 'heavy', rm = mat(/seeker|aim/.test(sec.kind) ? 0xd8d4c8 : 0x6d6f6a, { metalness:.5 });
     for (let i=0;i<n;i++){
       const sx = i%2 ? 1 : -1, k = Math.floor(i/2), x = ox + k*(big ? 1.0 : 0.6);
       const r = cyl(big ? 0.3 : 0.13, big ? 0.3 : 0.13, big ? 3.0 : 1.7, 8, rm); r.position.set(sx*x, yAt(x) - (big ? 0.2 : 0), 0.9); body.add(r);
-      g.userData.ord.push(r);
+      list.push(r);
     }
   } else if (sec.kind === 'torpedo'){
     for (let i=0;i<sec.count;i++){
       const t = cyl(0.28, 0.28, 4.2, 12, mat(0x55574f, { metalness:.5 })); t.position.set(sec.count === 1 ? 0 : (i%2 ? 1.8 : -1.8), -0.42*R - 0.7, 0.6); body.add(t);
-      g.userData.ord.push(t);
+      list.push(t);
     }
   } else {
     const big = sec.dmg > 400, bm = mat(sec.kind === 'cluster' ? 0x6a5a34 : 0x3b3f34, { metalness:.3 });
@@ -818,7 +992,7 @@ function addOrdnance(g, sec, look){
       const sx = i%2 ? 1 : -1, mid = sec.count === 1 || i === 2;
       const geo = new THREE.SphereGeometry(big ? 0.45 : 0.32, 12, 8); geo.scale(1, 1, 4);
       const b = new THREE.Mesh(geo, bm); b.position.set(mid ? 0 : sx*(big ? 1.6 : 2.4), -0.42*R - (big ? 0.6 : 0.45) - (mid ? 0.35 : 0), 0.8); body.add(b);
-      g.userData.ord.push(b);
+      list.push(b);
     }
   }
 }
@@ -844,7 +1018,7 @@ function makeBomber(){
   }
   const turret = new THREE.Mesh(new THREE.SphereGeometry(0.75, 14, 10), glassMat); turret.position.set(0, 1.45, -3); body.add(turret);
   const tail = new THREE.Mesh(new THREE.SphereGeometry(0.5, 12, 8), glassMat); tail.position.set(0, 0.1, -12.3); body.add(tail);
-  g.userData = { body, props, ord:[] };
+  g.userData = { body, props, ord:[], ordB:[] };
   return g;
 }
 function makeDestroyer(){
@@ -934,6 +1108,7 @@ function explode(pos, s){
   sfxBoom(pos, s);
 }
 function splash(pos, big){
+  if (MAP && !MAP.water){ const n = big ? 12 : 2; for (let i=0;i<n;i++) emit(tmpV2.set(pos.x, 1, pos.z), tmpV.set(rand(-1,1)*(big?8:2), rand(big?6:2, big?16:5), rand(-1,1)*(big?8:2)), rand(1,2), big?5:1.5, big?18:4, 0xb59a74, 0x8a7a62, false, .7, -2); return; }
   const n = big ? 16 : 3;
   for (let i=0;i<n;i++) emit(tmpV2.set(pos.x, 0.5, pos.z), tmpV.set(rand(-1,1)*(big?9:2), rand(big?20:6, big?42:12), rand(-1,1)*(big?9:2)), rand(.7,1.4), big?4:1.2, big?16:3, 0xffffff, 0xd8e6ea, false, .85, -30);
 }
@@ -987,7 +1162,7 @@ function updateBullets(dt){
       let hit = false;
       for (const e of enemies){
         if (e.dying) continue;
-        if (segHit(b.prev, p, e.obj.position, e.radius)){ damageEnemy(e, b.dmg, p); hit = true; break; }
+        if (segHit(b.prev, p, e.obj.position, e.radius)){ hitSrc = 'gun'; damageEnemy(e, b.dmg, p); hit = true; break; }
       }
       if (!hit) for (const s of surface){
         if (s.dead || s.side !== 'enemy') continue;
@@ -1082,7 +1257,7 @@ function updateBombs(dt){
       emit(p, ZERO, .2, 4, 12, 0xfff0b0, 0xff8a20, true, 1); noiseHit(0.3, 'bandpass', 1200, 400, 0.2);
       scene.remove(b.m); bombs.splice(i, 1); continue;
     }
-    if (b.kind === 'torpedo' && p.y <= 0.6 && gh < 1){
+    if (b.kind === 'torpedo' && p.y <= 0.6 && gh < 1 && MAP.water){
       b.run = true; splash(p, false); p.y = 0.2;
       tmpV.copy(b.vel).setY(0); if (tmpV.lengthSq() < 1) tmpV.set(0, 0, 1);
       b.vel.copy(tmpV.normalize().multiplyScalar(48));
@@ -1102,7 +1277,7 @@ function blast(pos, R, dmg, owner, salvo){
   explode(pos, Math.max(0.8, R/16));
   shake = Math.min(1.2, shake + clamp(1 - pos.distanceTo(camera.position)/400, 0, 0.6));
   if (owner === 'p'){
-    for (const e of enemies){ if (e.dying) continue; const d = e.obj.position.distanceTo(pos); if (d < R + e.radius) damageEnemy(e, dmg*(1 - 0.5*d/(R + e.radius)), pos); }
+    for (const e of enemies){ if (e.dying) continue; const d = e.obj.position.distanceTo(pos); if (d < R + e.radius){ hitSrc = 'ord'; damageEnemy(e, dmg*(1 - 0.5*d/(R + e.radius)), pos); } }
     for (const s of surface){
       if (s.dead || s.side !== 'enemy') continue;
       const inside = s.kind === 'aa' ? s.obj.position.distanceTo(pos) < R + 4 : shipContains(s, pos, R);
@@ -1116,7 +1291,7 @@ function blast(pos, R, dmg, owner, salvo){
     if (MS.baseHP && Math.hypot(pos.x - HARBOR.x, pos.z - HARBOR.z) < HARBOR.r + 15 && !MS.salvos[salvo]){
       MS.salvos[salvo] = true; MS.baseHits++;
       harborFires.push({ p:pos.clone().setY(HARBOR.h + 1), t:0 });
-      feed('Port Hollis hit!', true);
+      feed(HARBOR.name + ' hit!', true);
     }
   }
 }
@@ -1337,57 +1512,109 @@ const planeUnlocked = p => p.price ? progress.planes.includes(p.id) : progress.d
 const gunOwned = (p, g) => !g.price || (progress.guns[p.id] || []).includes(g.id);
 function equippedGun(p){ const id = progress.equip[p.id]; const g = p.guns.find(x => x.id === id && gunOwned(p, x)); return g || p.guns[0]; }
 const MISSILES = [
-  { id:'stock', name:'Standard ordnance', note:'The rockets or bombs this aircraft normally carries' },
-  { id:'barrage', name:'Barrage rocket pods', note:'Each press ripple-fires 8 small rockets, spread across every target you have locked', price:600, type:'rocket', kind:'barrage', count:3, guided:true, lockTime:0.8, short:'BARRAGE', label:'3 barrage salvos of 8 rockets' },
-  { id:'seeker', name:'Seeker missiles', note:'Fast homing missiles that lock on twice as quickly and turn hard to follow', price:900, type:'rocket', kind:'seeker', count:4, guided:true, lockTime:0.45, short:'SEEKER', label:'4 seeker missiles' },
-  { id:'tinytim', name:'Tiny Tim heavy rockets', note:'Huge unguided 11.75-inch rockets, a real 1945 US Navy weapon, with a massive blast', price:750, type:'rocket', kind:'heavy', count:2, guided:false, short:'TINY TIM', label:'2 Tiny Tim heavy rockets' },
-  { id:'cluster', name:'Cluster bombs', note:'Burst open above the target and carpet the area with bomblets', price:700, type:'bomb', kind:'cluster', count:3, short:'CLUSTER', label:'3 cluster bombs' },
-  { id:'torpedo', name:'Aerial torpedoes', note:'Drop low over the water and they run at ships. Lock a destroyer first and they home in', price:800, type:'bomb', kind:'torpedo', count:2, guided:true, shipsOnly:true, lockTime:0.9, dmg:900, radius:12, short:'TORPEDO', label:'2 aerial torpedoes' },
+  { id:'stock', slot:'msl', name:'Standard rockets', note:'Unguided rockets that home in once you lock a target' },
+  { id:'barrage', slot:'msl', name:'Barrage rocket pods', note:'Each press ripple-fires 8 small rockets, spread across every target you have locked', price:600, type:'rocket', kind:'barrage', count:3, guided:true, lockTime:0.8, short:'BARRAGE', label:'3 barrage salvos of 8 rockets' },
+  { id:'seeker', slot:'msl', name:'Seeker missiles', note:'Fast homing missiles that lock on twice as quickly and turn hard to follow', price:900, type:'rocket', kind:'seeker', count:4, guided:true, lockTime:0.45, short:'SEEKER', label:'4 seeker missiles' },
+  { id:'tinytim', slot:'msl', name:'Tiny Tim heavy rockets', note:'Huge unguided 11.75-inch rockets, a real 1945 US Navy weapon, with a massive blast', price:750, type:'rocket', kind:'heavy', count:2, guided:false, short:'TINY TIM', label:'2 Tiny Tim heavy rockets' },
+  { id:'stockb', slot:'bmb', name:'Standard bombs', note:'Iron bombs. Watch the dashed circle to see where they land' },
+  { id:'cluster', slot:'bmb', name:'Cluster bombs', note:'Burst open above the target and carpet the area with bomblets', price:700, type:'bomb', kind:'cluster', count:3, short:'CLUSTER', label:'3 cluster bombs' },
+  { id:'torpedo', slot:'bmb', name:'Aerial torpedoes', note:'Drop low over the water and they run at the nearest enemy ship ahead. Water maps only', price:800, type:'bomb', kind:'torpedo', count:2, dmg:900, radius:12, short:'TORPEDO', label:'2 aerial torpedoes' },
 ];
-const missileOwned = m => m.id === 'stock' || (progress.missiles || []).includes(m.id);
+if (progress.missile === 'cluster' || progress.missile === 'torpedo'){ progress.bomb = progress.missile; progress.missile = 'stock'; }
+const missileOwned = m => m.id === 'stock' || m.id === 'stockb' || (progress.missiles || []).includes(m.id);
 function loadoutFor(p){
-  const m = MISSILES.find(x => x.id === progress.missile && missileOwned(x)) || MISSILES[0];
-  if (m.id !== 'stock') return Object.assign({}, m);
-  return Object.assign({ id:'stock', kind:p.sec.type, guided:p.sec.type === 'rocket', lockTime:0.9, short:p.sec.type === 'rocket' ? 'ROCKET' : 'BOMB' }, p.sec, { id:'stock' });
+  const pick = (slot, cur) => MISSILES.find(x => x.slot === slot && x.id === cur && missileOwned(x));
+  const m = pick('msl', progress.missile), b = pick('bmb', progress.bomb);
+  const ps = p.sec;
+  let msl, bmb;
+  if (m && m.id !== 'stock') msl = Object.assign({}, m);
+  else if (ps.type === 'rocket' && ps.count) msl = Object.assign({ kind:'rocket', guided:true, lockTime:0.9, short:'ROCKET' }, ps, { id:'stock' });
+  else msl = { id:'stock', type:'rocket', kind:'rocket', count:4, guided:true, lockTime:0.9, short:'ROCKET', label:'4 rockets' };
+  if (b && b.id !== 'stockb') bmb = Object.assign({}, b);
+  else if (ps.type === 'bomb' && ps.count) bmb = Object.assign({ kind:'bomb', short:'BOMB' }, ps, { id:'stockb' });
+  else bmb = p.era === 'modern' ? { id:'stockb', type:'bomb', kind:'bomb', count:2, dmg:520, radius:30, short:'BOMB', label:'2 × 1,000 lb bombs' } : { id:'stockb', type:'bomb', kind:'bomb', count:2, dmg:320, radius:24, short:'BOMB', label:'2 × 250 lb bombs' };
+  return { msl, bmb };
+}
+const CHALLENGES = [
+  { id:'kills5', text:'Shoot down 5 aircraft', goal:5, reward:250, ev:'kill' },
+  { id:'kills10', text:'Shoot down 10 aircraft', goal:10, reward:500, ev:'kill', endlessOnly:true },
+  { id:'ord2', text:'Down 2 aircraft with missiles or bombs', goal:2, reward:300, ev:'kill', how:'ord' },
+  { id:'guns4', text:'Down 4 aircraft with your guns', goal:4, reward:250, ev:'kill', how:'gun' },
+  { id:'double', text:'Get a double kill (2 within 4 seconds)', goal:1, reward:350, ev:'double' },
+  { id:'long', text:'Down an aircraft from over 350 yards', goal:1, reward:250, ev:'kill', far:350 },
+  { id:'boost', text:'Get 2 kills while boosting', goal:2, reward:250, ev:'kill', boost:true },
+  { id:'rolls', text:'Pull off 2 victory rolls', goal:2, reward:200, ev:'roll' },
+  { id:'ground', text:'Destroy a gun or a ship', goal:1, reward:250, ev:'surface', needs:'surface' },
+  { id:'bomber', text:'Shoot down a bomber', goal:1, reward:300, ev:'kill', type:'bomber', needs:'bomber' },
+  { id:'ace', text:'Shoot down a Red Nose ace', goal:1, reward:350, ev:'kill', type:'ace', needs:'ace' },
+  { id:'hull', text:'Finish with at least 70% hull', goal:1, reward:350, end:'hull', missionOnly:true },
+  { id:'noord', text:'Win without using missiles or bombs', goal:1, reward:400, end:'noord', missionOnly:true },
+];
+let pendingCh = [];
+function rollChallenges(md){
+  const has = md.endless ? ['bomber', 'surface'] : (md.has || []);
+  const pool = CHALLENGES.filter(c => (!c.needs || has.includes(c.needs)) && !(c.endlessOnly && !md.endless) && !(c.missionOnly && md.endless));
+  const out = [];
+  while (out.length < 3 && pool.length) out.push(pool.splice((Math.random()*pool.length)|0, 1)[0]);
+  return out;
+}
+let lastKillT = -9;
+function chEvent(ev, info){
+  if (!MS.ch || state !== 'playing') return;
+  for (const c of MS.ch){
+    const d = c.def;
+    if (c.done || d.ev !== ev) continue;
+    if (d.how && info.how !== d.how) continue;
+    if (d.type && info.type !== d.type) continue;
+    if (d.far && !(info.dist > d.far)) continue;
+    if (d.boost && !info.boost) continue;
+    c.n++;
+    if (c.n >= d.goal) completeCh(c);
+  }
+}
+function completeCh(c){
+  c.done = true; earn(c.def.reward); MS.chPay = (MS.chPay || 0) + c.def.reward;
+  feed('Challenge done: ' + c.def.text + ' +$' + c.def.reward);
+  tone('square', 784, 784, 0.1, 0.1); tone('square', 1046, 1046, 0.18, 0.1, 0.1);
 }
 function earn(n){ progress.money += n; MS.pay = (MS.pay || 0) + n; saveProgress(); }
 
 /* ---------- missions ---------- */
 const MISSIONS = [
-  { name:'First Patrol', place:'Coastal patrol · 06:10', hour:6.2,
+  { name:'First Patrol', place:'Coastal patrol · 06:10', hour:6.2, map:'islands',
     text:'Enemy scouts are probing the coast near Port Hollis. Find them and shoot them down before they report our positions.',
     goals:['Shoot down all enemy fighters'],
     phases:[ () => air('fighter', 3, { skill:0 }), () => air('fighter', 2, { skill:0.3 }) ] },
-  { name:'Convoy Cover', place:'Southern approach · 09:30', hour:9.5,
-    text:'Three supply ships are steaming for Port Hollis. Enemy bombers will try to sink them on the way. Keep at least two of them afloat.',
+  { name:'Convoy Cover', place:'Stormy Channel · 09:30', hour:9.5, map:'channel', has:['bomber'],
+    text:'Three supply ships are pushing up the storm-lashed channel to Port Hollis. Enemy bombers will try to sink them in the rain. Keep at least two of them afloat.',
     goals:['Protect the convoy: 2 of 3 ships must survive','Destroy all attackers'], convoy:3, minShips:2,
     phases:[ () => { air('fighter', 2, { skill:0.2 }); air('bomber', 2, { target:'friend' }); }, () => { air('fighter', 3, { skill:0.3 }); air('bomber', 2, { target:'friend' }); } ] },
-  { name:'Flak Alley', place:'Gull Island · 11:00', hour:11,
-    text:'Anti-aircraft guns on Gull Island keep shooting down our patrols. Knock out all four gun pits. Rockets and bombs work fastest. Stay fast and change direction between passes.',
-    goals:['Destroy 4 AA guns on Gull Island'],
+  { name:'Flak Alley', place:'Red Rock Desert · 11:00', hour:11, map:'desert', has:['surface'],
+    text:'Anti-aircraft guns dug in around Red Mesa keep shooting down our patrols. Knock out all four gun pits. Rockets and bombs work fastest. Stay fast and change direction between passes.',
+    goals:['Destroy 4 AA guns around Red Mesa'],
     phases:[ () => { aaOn('gull', 4); air('fighter', 2, { skill:0.3 }); } ] },
-  { name:'Bomber Intercept', place:'Port Hollis · 13:15', hour:13.25,
-    text:'A bomber formation is heading for the harbor at Port Hollis. Shoot the bombers down before they reach the docks. The harbor can take two hits, no more.',
-    goals:['Stop the bombers: the harbor survives 2 hits','Destroy the escorts'], baseHP:3,
+  { name:'Bomber Intercept', place:'Alpine Valley · 13:15', hour:13.25, map:'alpine', has:['bomber'],
+    text:'A bomber formation is coming over the mountains for our airfield in the valley. Shoot the bombers down before they reach it. The airfield can take two hits, no more.',
+    goals:['Stop the bombers: the airfield survives 2 hits','Destroy the escorts'], baseHP:3,
     phases:[ () => { air('bomber', 3, { target:'base' }); air('fighter', 2, { skill:0.35 }); }, () => { air('bomber', 3, { target:'base' }); air('fighter', 3, { skill:0.4 }); } ] },
-  { name:'Destroyer Hunt', place:'Hollis Strait · 15:40', hour:15.7,
-    text:'Two enemy destroyers are shelling our outposts. Sink them both. Their flak is heavy, so come in fast and break away.',
+  { name:'Destroyer Hunt', place:'Frost Fjord · 15:40', hour:15.7, map:'fjord', has:['surface'],
+    text:'Two enemy destroyers are hiding among the icebergs of the fjord and shelling our outposts. Sink them both. Their flak is heavy, so come in fast and break away. Torpedoes work well here.',
     goals:['Sink 2 enemy destroyers'],
     phases:[ () => { ships(2); air('fighter', 2, { skill:0.4 }); } ] },
-  { name:'Harbor Raid', place:'Port Hollis · 17:20', hour:17.3,
+  { name:'Harbor Raid', place:'Port Hollis · 17:20', hour:17.3, map:'islands', has:['bomber', 'surface'],
     text:'A full raid is coming: fighters, bombers and a destroyer closing on the harbor. Protect Port Hollis and the two ships tied up at the docks.',
     goals:['Defend the harbor: it survives 2 hits','Keep 1 of 2 docked ships afloat','Destroy all attackers'], baseHP:3, docked:2, minShips:1,
     phases:[ () => { air('fighter', 3, { skill:0.45 }); air('bomber', 2, { target:'base' }); }, () => { ships(1); air('bomber', 2, { target:'friend' }); air('fighter', 2, { skill:0.5 }); }, () => air('fighter', 4, { skill:0.6 }) ] },
-  { name:'Ace of Aces', place:'High over the strait · 18:40', hour:18.6,
+  { name:'Ace of Aces', place:'Over Red Rock Desert · 18:40', hour:18.6, map:'desert', has:['ace'],
     text:'The enemy’s best squadron, the Red Noses, is up. Their pilots turn hard and shoot straight. Bring every one of them down.',
     goals:['Shoot down the Red Nose squadron'],
     phases:[ () => air('ace', 3), () => { air('ace', 3); air('fighter', 2, { skill:0.6 }); } ] },
-  { name:'Cape Arden', place:'Cape Arden · 19:20', hour:19.3,
+  { name:'Cape Arden', place:'Cape Arden · 19:20', hour:19.3, map:'islands', has:['surface', 'ace'],
     text:'The final push. Silence the guns on Cape Arden, sink the destroyers guarding the cape, and clear the sky of enemy aircraft.',
     goals:['Destroy 3 AA guns on Cape Arden','Sink 2 destroyers','Destroy all enemy aircraft'],
     phases:[ () => { aaOn('arden', 3); air('fighter', 3, { skill:0.5 }); }, () => { ships(2, 'arden'); air('fighter', 2, { skill:0.6 }); air('ace', 1); }, () => { air('ace', 2); air('fighter', 3, { skill:0.7 }); } ] },
 ];
-const ENDLESS = { name:'Endless dogfight', place:'Port Hollis · 16:00', hour:16, text:'Wave after wave of enemy aircraft, with bombers every third wave and destroyers later on. You are patched and rearmed between waves. Survive as long as you can.', goals:['Survive and score as high as you can'], endless:true };
+const ENDLESS = { name:'Endless dogfight', place:'Free flight · 16:00', hour:16, text:'Wave after wave of enemy aircraft, with bombers every third wave and destroyers later on. You are patched and rearmed between waves. Survive as long as you can.', goals:['Survive and score as high as you can'], endless:true };
 
 /* ---------- game state ---------- */
 let state = 'menu';
@@ -1395,7 +1622,7 @@ let score = 0, kills = 0, shake = 0, hitFlash = 0, time = 0, overTimer = -1;
 let MD = null, mIdx = -1, wave = 0;
 let MS = { phase:-1, next:-1, baseHits:0, baseHP:0, minShips:0, salvos:{}, friendTotal:0, friendLost:0, done:false };
 const enemies = [], surface = [];
-const input = { pitch:0, roll:0, fire:false, boost:false, sec:false };
+const input = { pitch:0, roll:0, fire:false, boost:false, sec:false, bomb:false };
 const keys = {};
 const player = { obj:null, def:null, vel:new V3(), speed:72, hp:100, hpMax:100, heat:0, hot:false, boostE:1, alive:true, fireT:0, gun:0, smokeT:0, exT:0, vapT:0, target:null, leadPos:new V3(), locked:false, secLeft:0, secT:0, locks:[], launchQ:[], beepT:0 };
 const fl = { heading:0, pitch:0, bank:0 };
@@ -1403,13 +1630,15 @@ const euler = new THREE.Euler(0, 0, 0, 'YXZ');
 const Y = new V3(0,1,0), fwd = new V3(), up = new V3();
 const dummy = new THREE.Object3D();
 
+function buildModel(def){ return def.look.twin ? makeP38(def.look) : def.look.modern ? makeModernJet(def.look) : def.look.jet ? makeMeteor(def.look) : makeAircraft(def.look); }
 function buildPlayer(def){
   if (player.obj) scene.remove(player.obj);
   player.def = def;
-  player.obj = def.look.twin ? makeP38(def.look) : def.look.modern ? makeModernJet(def.look) : def.look.jet ? makeMeteor(def.look) : makeAircraft(def.look);
+  player.obj = buildModel(def);
   player.gunDef = equippedGun(def).gun;
-  player.sec = loadoutFor(def);
-  addOrdnance(player.obj, player.sec, def.look);
+  const lo = loadoutFor(def); player.msl = lo.msl; player.bmb = lo.bmb; player.sec = player.msl;
+  addOrdnance(player.obj, player.msl, def.look, player.obj.userData.ord);
+  addOrdnance(player.obj, player.bmb, def.look, player.obj.userData.ordB);
   scene.add(player.obj);
 }
 function resetPlayer(def){
@@ -1418,7 +1647,7 @@ function resetPlayer(def){
   o.position.set(0, 260, -820); fl.heading = 0; fl.pitch = 0; fl.bank = 0;
   euler.set(0, 0, 0); o.quaternion.setFromEuler(euler);
   player.speed = def.speed; player.hpMax = def.hp; player.hp = def.hp; player.heat = 0; player.hot = false; player.boostE = 1; player.alive = true;
-  player.target = null; player.locked = false; player.secLeft = player.sec.count; player.secT = 0; player.locks = []; player.launchQ = []; player.rollT = 0; player.shot = 0; o.userData.body.rotation.z = 0;
+  player.target = null; player.locked = false; player.secLeft = player.msl.count; player.bombLeft = player.bmb.count; player.secT = 0; player.bombT = 0; player.locks = []; player.launchQ = []; player.rollT = 0; player.shot = 0; o.userData.body.rotation.z = 0;
   syncSecButton();
 }
 
@@ -1437,18 +1666,36 @@ function damagePlayer(d){
   if (player.hp <= 0) crashPlayer();
 }
 function syncSecButton(){
-  const S = player.sec; if (!S) return;
-  const b = $('btnSec');
-  b.innerHTML = S.short + '<br>' + player.secLeft;
-  b.disabled = player.secLeft <= 0; b.style.visibility = S.count ? '' : 'hidden';
+  if (!player.msl) return;
+  const b = $('btnSec'), bb = $('btnBomb');
+  b.innerHTML = player.msl.short + '<br>' + player.secLeft; b.disabled = player.secLeft <= 0;
+  bb.innerHTML = player.bmb.short + '<br>' + player.bombLeft; bb.disabled = player.bombLeft <= 0;
 }
 function useOrd(){
   const vis = player.obj.userData.ord.filter(m => m.visible);
-  if (vis.length && (player.sec.type === 'bomb' || player.secLeft <= vis.length)) vis[vis.length - 1].visible = false;
-  player.secLeft--;
+  if (vis.length && player.secLeft <= vis.length) vis[vis.length - 1].visible = false;
+  player.secLeft--; MS.usedOrd = true;
+}
+function useBomb(){
+  const vis = player.obj.userData.ordB.filter(m => m.visible);
+  if (vis.length) vis[vis.length - 1].visible = false;
+  player.bombLeft--; MS.usedOrd = true;
+}
+function fireBomb(){
+  const S = player.bmb, o = player.obj;
+  if (player.bombLeft <= 0 || player.bombT > 0 || state !== 'playing' || !player.alive) return;
+  o.updateMatrixWorld();
+  useBomb(); player.bombT = 0.5;
+  const pos = new V3(0, -1.2, 0.8).applyMatrix4(o.matrixWorld);
+  const dv = player.vel.clone().add(tmpV.set(0, -2, 0)); if (S.kind === 'torpedo') dv.y = Math.min(dv.y, -2);
+  let tgt = null;
+  if (S.kind === 'torpedo'){ fwd.set(0,0,1).applyQuaternion(o.quaternion); let bd = Math.cos(0.6); for (const s of surface){ if (s.dead || s.side !== 'enemy' || s.kind !== 'destroyer') continue; tmpV.subVectors(s.obj.position, o.position); tmpV.y = 0; const l = tmpV.length(); const d = tmpV.x*fwd.x/l + tmpV.z*fwd.z/l; if (l < 1400 && d > bd){ bd = d; tgt = s; } } }
+  dropBomb(pos, dv, 'p', S.dmg || 320, S.radius || 24, -1, { kind:S.kind, target:tgt });
+  sfxRelease();
+  syncSecButton();
 }
 function fireSecondary(){
-  const S = player.sec, o = player.obj;
+  const S = player.msl, o = player.obj;
   if (player.secLeft <= 0 || player.secT > 0 || state !== 'playing' || !player.alive) return;
   o.updateMatrixWorld();
   const locked = player.locks.filter(L => L.p >= 1 && lockAlive(L.t)).map(L => L.t);
@@ -1471,7 +1718,7 @@ function fireSecondary(){
       if (!t){ dir.x += rand(-.05,.05); dir.y += rand(-.03,.03); dir.z += rand(-.05,.05); dir.normalize(); }
       fireRocket(pos, dir, player.vel, t, ROCKET_OPT.barrage);
     } });
-  } else if (S.type === 'rocket'){
+  } else {
     const opt = ROCKET_OPT[S.kind] || ROCKET_OPT.rocket;
     const n = S.guided && locked.length ? Math.min(locked.length, player.secLeft) : 1;
     player.secT = 0.3 + 0.12*(n - 1);
@@ -1480,12 +1727,6 @@ function fireSecondary(){
       const t = S.guided ? (locked[k] || null) : null, side = (player.secLeft % 2) ? 1 : -1;
       player.launchQ.push({ t:k*0.12, fn:() => { const pos = muzzle(side); fireRocket(pos, aimDir(pos, t && lockAlive(t) ? t : null), player.vel, t, opt); } });
     }
-  } else {
-    useOrd(); player.secT = 0.5;
-    const pos = new V3(0, -1.2, 0.8).applyMatrix4(o.matrixWorld);
-    const dv = player.vel.clone().add(tmpV.set(0, -2, 0)); if (S.kind === 'torpedo') dv.y = Math.min(dv.y, -2);
-    dropBomb(pos, dv, 'p', S.dmg || 320, S.radius || 24, -1, { kind:S.kind, target:S.kind === 'torpedo' ? (locked[0] || null) : null });
-    sfxRelease();
   }
   syncSecButton();
 }
@@ -1601,9 +1842,10 @@ function updatePlayer(dt){
   player.gunHold = (player.gunHold || 0) - dt;
   const mgOn = player.gunHold > 0 && !player.gunDef.cannon && state === 'playing' && player.alive;
   if (mgOn) gunStart(); else gunStop();
-  player.secT -= dt;
+  player.secT -= dt; player.bombT -= dt;
   for (let i = player.launchQ.length - 1; i >= 0; i--){ const q = player.launchQ[i]; q.t -= dt; if (q.t <= 0){ player.launchQ.splice(i, 1); if (player.alive && state === 'playing') q.fn(); } }
   if (input.sec || keys.sec) fireSecondary();
+  if (input.bomb || keys.bomb) fireBomb();
   if (player.rollT > 0){
     player.rollT = Math.max(0, player.rollT - dt);
     const k = 1 - player.rollT/1.15, ease = k < 0.5 ? 2*k*k : 1 - Math.pow(-2*k + 2, 2)/2;
@@ -1629,7 +1871,7 @@ function updatePlayer(dt){
 function lockPos(t, out){ return t.kind ? out.copy(t.obj.position).setY(t.obj.position.y + 3) : out.copy(t.obj.position); }
 function lockAlive(t){ return t && (t.kind ? !t.dead : !t.dying && enemies.includes(t)) && (t.kind ? surface.includes(t) : true); }
 function updateRocketLock(dt, f){
-  const P = player.obj.position, S = player.sec, locks = player.locks;
+  const P = player.obj.position, S = player.msl, locks = player.locks;
   if (state !== 'playing' || !player.alive || !S.guided || player.secLeft <= 0){ locks.length = 0; return; }
   const n = player.def.locks || 1;
   const cone = n >= 6 ? 0.5 : n > 1 ? 0.36 : 0.24;
@@ -1700,11 +1942,14 @@ function damageEnemy(e, d, at){
     explode(e.obj.position, e.type === 'bomber' ? 1.6 : 0.9);
     const pts = e.type === 'bomber' ? 400 : e.type === 'ace' ? 300 : 100;
     score += pts; kills++;
-    const cash = e.type === 'bomber' ? 40 : e.type === 'ace' ? 30 : 10;
+    const cash = e.type === 'bomber' ? 120 : e.type === 'ace' ? 100 : 40;
     earn(cash);
     feed((e.type === 'bomber' ? 'Bomber' : e.type === 'ace' ? 'Red Nose ace' : 'Fighter') + ' down +' + pts + ' · $' + cash);
+    if (player.obj) chEvent('kill', { type:e.type, how:hitSrc, dist:e.obj.position.distanceTo(player.obj.position)*1.64, boost:!!player.boosting });
+    if (time - lastKillT < 4) chEvent('double', {});
+    lastKillT = time;
     if (state === 'playing' && player.alive && player.rollT <= 0 && Math.random() < 0.4){
-      player.rollT = 1.15; player.rollDir = Math.random() < 0.5 ? -1 : 1;
+      player.rollT = 1.15; player.rollDir = Math.random() < 0.5 ? -1 : 1; chEvent('roll', {});
       noiseHit(0.9, 'bandpass', 600, 1800, 0.12);
       setTimeout(() => feed('Victory roll!'), 250);
     }
@@ -1792,7 +2037,7 @@ function updateEnemies(dt){
       } else if (e.fireCd <= 0 && dist < 450 && fwd.dot(tmpV)/dist > 0.982){
         e.burst = 6; e.burstT = 0; e.fireCd = rand(1.8, 3.4) - (e.type === 'ace' ? 0.8 : 0);
       }
-      if (dist < (e.type === 'bomber' ? 15 : 7)){ damagePlayer(30); damageEnemy(e, 999, p); continue; }
+      if (dist < (e.type === 'bomber' ? 15 : 7)){ damagePlayer(30); hitSrc = 'ram'; damageEnemy(e, 999, p); continue; }
     }
     if (e.hp < e.maxHp*0.5){
       e.smokeT -= dt;
@@ -1852,7 +2097,7 @@ function damageSurface(s, d, at){
     explode(tmpV.copy(s.obj.position).setY(s.obj.position.y + 4), s.kind === 'aa' ? 1 : 2);
     if (s.side === 'enemy'){
       const pts = s.kind === 'aa' ? 150 : 600; score += pts;
-      const cash = s.kind === 'aa' ? 15 : 60; earn(cash);
+      const cash = s.kind === 'aa' ? 50 : 200; earn(cash); chEvent('surface', {});
       feed((s.kind === 'aa' ? 'AA gun destroyed' : 'Destroyer sunk') + ' +' + pts + ' · $' + cash);
       if (s.kind === 'aa'){ s.obj.userData.turret.visible = false; s.obj.scale.y = 0.4; }
     } else { MS.friendLost++; feed('Supply ship sunk!', true); }
@@ -1936,7 +2181,7 @@ function nextEndlessWave(){
   const f = Math.min(2 + wave, 9), b = wave % 3 === 0 ? Math.floor(wave/3) + 1 : 0;
   air('fighter', f, { skill:Math.min(1, wave*0.07) });
   if (b) air('bomber', b, {});
-  if (wave >= 4 && wave % 4 === 0) ships(1);
+  if (wave >= 4 && wave % 4 === 0){ if (MAP.water) ships(1); else aaOn('gull', 2); }
   banner('Wave ' + wave, 'Endless dogfight', b ? f + ' fighters, ' + b + (b > 1 ? ' bombers' : ' bomber') + ' inbound' : f + ' enemy fighters inbound');
   sfxBugle();
 }
@@ -1959,8 +2204,8 @@ function updateMission(dt){
   if (MS.baseHP && MS.baseHits >= MS.baseHP) return finish(false, 'Port Hollis took too many hits.');
   if (hostilesLeft() === 0){
     if (MD.endless){
-      MS.next = 4.5; const bonus = 250*wave; score += bonus; earn(20 + 5*wave); player.hp = Math.min(player.hpMax, player.hp + player.hpMax*0.35);
-      player.secLeft = player.sec.count; player.obj.userData.ord.forEach(m => m.visible = true); syncSecButton();
+      MS.next = 4.5; const bonus = 250*wave; score += bonus; earn(100 + 40*wave); player.hp = Math.min(player.hpMax, player.hp + player.hpMax*0.35);
+      player.secLeft = player.msl.count; player.bombLeft = player.bmb.count; player.obj.userData.ord.forEach(m => m.visible = true); player.obj.userData.ordB.forEach(m => m.visible = true); syncSecButton();
       banner('Radio · Ground control', 'Sector clear', 'Bonus +' + bonus + ' · patched and rearmed');
     } else if (MS.phase < MD.phases.length - 1){
       MS.next = 4.5; player.hp = Math.min(player.hpMax, player.hp + player.hpMax*0.2);
@@ -1981,7 +2226,7 @@ function objectiveText(){
   const aa = surface.filter(s => s.kind === 'aa' && !s.dead).length;
   const dd = surface.filter(s => s.kind === 'destroyer' && !s.dead).length;
   if (MS.friendTotal) parts.push('Our ships ' + (MS.friendTotal - MS.friendLost) + '/' + MS.friendTotal);
-  if (MS.baseHP) parts.push('Harbor hits ' + MS.baseHits + '/' + (MS.baseHP - 1));
+  if (MS.baseHP) parts.push('Base hits ' + MS.baseHits + '/' + (MS.baseHP - 1));
   if (aa) parts.push('AA guns ' + aa);
   if (dd) parts.push('Destroyers ' + dd);
   parts.push('Aircraft ' + aircraft);
@@ -2030,6 +2275,8 @@ function updateHUD(dt){
     objT = 0.25;
     $('waveLbl').textContent = MD.endless ? 'Endless · wave ' + wave : 'Mission ' + (mIdx + 1) + ' · ' + MD.name;
     $('objLbl').textContent = objectiveText();
+    const cl = $('chLbl'); cl.innerHTML = '';
+    for (const c of (MS.ch || [])){ const d = document.createElement('div'); if (c.done) d.className = 'done'; d.textContent = (c.done ? '✓ ' : '☐ ') + c.def.text + (c.def.goal > 1 && !c.done ? ' ' + c.n + '/' + c.def.goal : '') + ' · $' + c.def.reward; cl.appendChild(d); }
   }
   dialT -= dt;
   if (dialT <= 0){
@@ -2056,7 +2303,7 @@ function updateHUD(dt){
     const lk = L.p >= 1; E.el.classList.toggle('locked', lk); E.lbl.textContent = lk ? 'LOCKED' : 'LOCKING';
   }
   for (; li < lockEls.length; li++) lockEls[li].el.hidden = true;
-  const showBS = player.alive && player.sec.type === 'bomb' && player.secLeft > 0 && surface.some(s => s.side === 'enemy' && !s.dead);
+  const showBS = player.alive && player.bombLeft > 0 && surface.some(s => s.side === 'enemy' && !s.dead);
   bombsight.hidden = !(showBS && placeAt(bombsight, bombImpact(tmpV3), W, H));
 
   let mi = 0;
@@ -2182,10 +2429,10 @@ function holdButton(el, key){
   el.addEventListener('pointerup', off); el.addEventListener('pointercancel', off);
   el.addEventListener('contextmenu', e => e.preventDefault());
 }
-holdButton($('btnFire'), 'fire'); holdButton($('btnBoost'), 'boost'); holdButton($('btnSec'), 'sec');
+holdButton($('btnFire'), 'fire'); holdButton($('btnBoost'), 'boost'); holdButton($('btnSec'), 'sec'); holdButton($('btnBomb'), 'bomb');
 document.addEventListener('touchmove', e => { if (state === 'playing') e.preventDefault(); }, { passive:false });
 document.addEventListener('gesturestart', e => e.preventDefault());
-const KMAP = { KeyW:'up', ArrowUp:'up', KeyS:'down', ArrowDown:'down', KeyA:'left', ArrowLeft:'left', KeyD:'right', ArrowRight:'right', Space:'fire', ShiftLeft:'boost', ShiftRight:'boost', KeyF:'sec', KeyX:'sec' };
+const KMAP = { KeyW:'up', ArrowUp:'up', KeyS:'down', ArrowDown:'down', KeyA:'left', ArrowLeft:'left', KeyD:'right', ArrowRight:'right', Space:'fire', ShiftLeft:'boost', ShiftRight:'boost', KeyF:'sec', KeyB:'bomb', KeyX:'bomb' };
 addEventListener('keydown', e => {
   if (KMAP[e.code]){ keys[KMAP[e.code]] = true; if (state === 'playing') e.preventDefault(); }
   if (e.code === 'KeyP' || e.code === 'Escape'){ if (state === 'playing') pause(); else if (state === 'paused') resume(); }
@@ -2239,17 +2486,36 @@ function openBrief(i){
   const ul = $('bGoals'); ul.innerHTML = '';
   for (const g of MD.goals){ const li = document.createElement('li'); li.textContent = g; ul.appendChild(li); }
   if (!planeUnlocked(planeById(settings.plane))) settings.plane = 'p51';
+  pendingCh = rollChallenges(MD);
+  const cu = $('bCh'); cu.innerHTML = '';
+  for (const c of pendingCh){ const li = document.createElement('li'); li.textContent = c.text + ' · $' + c.reward; cu.appendChild(li); }
+  $('bMapBox').hidden = !MD.endless;
+  if (MD.endless) renderMapPicker();
+  buildWorld(MD.endless ? settings.dfMap : MD.map);
+  if (!MD.endless) $('bPlace').textContent = MD.place;
   renderPlanes();
   setTimeOfDay(MD.hour);
   state = 'brief';
   showScreen('brief');
 }
+function renderMapPicker(){
+  const box = $('bMaps'); box.innerHTML = '';
+  for (const id of MAP_ORDER){
+    const b = document.createElement('button'); b.className = 'mapb'; b.textContent = MAPS[id].name;
+    b.setAttribute('aria-pressed', String(settings.dfMap === id));
+    b.addEventListener('click', () => { settings.dfMap = id; store.set('dfMap', id); buildWorld(id); setTimeOfDay(MD.hour); $('bPlace').textContent = MAPS[id].name + ' · ' + MAPS[id].blurb; renderMapPicker(); resetPlayer(planeById(settings.plane)); });
+    box.appendChild(b);
+  }
+  $('bPlace').textContent = MAPS[settings.dfMap].name;
+}
 function renderPlanes(){
   const p = planeById(settings.plane);
   $('bPlane').textContent = p.name;
-  $('bGun').textContent = equippedGun(p).name + ' · ' + loadoutFor(p).label;
-  if (!player.def || player.def.id !== settings.plane || player.gunDef !== equippedGun(p).gun || !player.sec || player.sec.id !== loadoutFor(p).id) resetPlayer(p);
+  const lo = loadoutFor(p);
+  $('bGun').textContent = equippedGun(p).name + ' · ' + lo.msl.label + ' · ' + lo.bmb.label;
+  if (!player.def || player.def.id !== settings.plane || player.gunDef !== equippedGun(p).gun || !player.msl || player.msl.id !== lo.msl.id || player.bmb.id !== lo.bmb.id) resetPlayer(p);
 }
+let hitSrc = 'gun';
 let hangarSel = null, hangarBack = 'menu';
 const money = n => '$' + n.toLocaleString();
 function openHangar(back){
@@ -2274,7 +2540,9 @@ function renderHangar(){
   }
   const p = planeById(hangarSel), un = planeUnlocked(p);
   $('hName').textContent = p.name;
-  $('hInfo').textContent = p.role + '. Real top speed ' + p.topSpeed + ' mph. Gun damage ×' + p.power.toFixed(2).replace(/0$/, '') + '. Locks ' + (p.locks > 1 ? p.locks + ' targets at once' : '1 target') + '. Carries ' + p.sec.label + '. Toughness ' + p.hp + ', turning ' + Math.round(p.turn*100) + '.';
+  const lo = loadoutFor(p);
+  $('hInfo').textContent = p.role + '. Real top speed ' + (p.topSpeed >= 1000 ? p.topSpeed.toLocaleString() : p.topSpeed) + ' mph. Gun damage ×' + p.power.toFixed(2).replace(/0$/, '') + '. Locks ' + (p.locks > 1 ? p.locks + ' targets at once' : '1 target') + '. Flies with ' + lo.msl.label + ' and ' + lo.bmb.label + '. Toughness ' + p.hp + ', turning ' + Math.round(p.turn*100) + '.';
+  previewPlane(p);
   const pb = $('hPlaneBuy'); pb.innerHTML = '';
   if (!un){
     const b = document.createElement('button'); b.className = 'buy primaryish';
@@ -2304,24 +2572,68 @@ function renderHangar(){
     }
     row.appendChild(info); row.appendChild(b); gl.appendChild(row);
   }
-  const ml = $('hMissiles'); ml.innerHTML = '';
-  const curM = progress.missile || 'stock';
-  for (const m of MISSILES){
-    const row = document.createElement('div'); row.className = 'hg';
-    const info = document.createElement('div'); info.innerHTML = '<b></b><small></small>';
-    info.children[0].textContent = m.name;
-    info.children[1].textContent = m.id === 'stock' ? m.note + '. On the ' + p.name + ': ' + p.sec.label + '.' : m.note + '. Carries ' + m.label + '.';
-    const b = document.createElement('button'); b.className = 'buy';
-    const owned = missileOwned(m);
-    if (owned && curM === m.id){ b.textContent = 'Equipped'; b.disabled = true; }
-    else if (owned){ b.textContent = 'Equip'; b.addEventListener('click', () => { progress.missile = m.id; saveProgress(); resetPlayer(planeById(settings.plane)); renderHangar(); }); }
-    else {
-      const can = progress.money >= m.price;
-      b.textContent = 'Buy ' + money(m.price); b.classList.add('primaryish'); b.disabled = !can;
-      b.addEventListener('click', () => { if (progress.money < m.price) return; progress.money -= m.price; progress.missiles.push(m.id); progress.missile = m.id; saveProgress(); resetPlayer(planeById(settings.plane)); tone('square', 660, 990, 0.15, 0.12); renderHangar(); });
+  for (const [slot, boxId, key] of [['msl', 'hMissiles', 'missile'], ['bmb', 'hBombs', 'bomb']]){
+    const ml = $(boxId); ml.innerHTML = '';
+    const cur = (progress[key] && MISSILES.some(m => m.id === progress[key] && m.slot === slot && missileOwned(m))) ? progress[key] : (slot === 'msl' ? 'stock' : 'stockb');
+    for (const m of MISSILES.filter(x => x.slot === slot)){
+      const row = document.createElement('div'); row.className = 'hg';
+      const info = document.createElement('div'); info.innerHTML = '<b></b><small></small>';
+      info.children[0].textContent = m.name;
+      const stockLbl = slot === 'msl' ? loadoutFor(Object.assign({}, p)).msl : null;
+      info.children[1].textContent = m.price ? m.note + '. Carries ' + m.label + '.' : m.note + '.';
+      const b = document.createElement('button'); b.className = 'buy';
+      const owned = missileOwned(m);
+      if (owned && cur === m.id){ b.textContent = 'Equipped'; b.disabled = true; }
+      else if (owned){ b.textContent = 'Equip'; b.addEventListener('click', () => { progress[key] = m.id; saveProgress(); resetPlayer(planeById(settings.plane)); renderHangar(); }); }
+      else {
+        const can = progress.money >= m.price;
+        b.textContent = 'Buy ' + money(m.price); b.classList.add('primaryish'); b.disabled = !can;
+        b.addEventListener('click', () => { if (progress.money < m.price) return; progress.money -= m.price; progress.missiles.push(m.id); progress[key] = m.id; saveProgress(); resetPlayer(planeById(settings.plane)); tone('square', 660, 990, 0.15, 0.12); renderHangar(); });
+      }
+      row.appendChild(info); row.appendChild(b); ml.appendChild(row);
     }
-    row.appendChild(info); row.appendChild(b); ml.appendChild(row);
   }
+}
+/* ---------- hangar 3D preview ---------- */
+let prev = null;
+function ensurePreview(){
+  if (prev) return prev;
+  const r = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+  r.setPixelRatio(PR);
+  const sc = new THREE.Scene();
+  sc.add(new THREE.HemisphereLight(0xf4eee2, 0x4a4a40, 0.95));
+  const dl = new THREE.DirectionalLight(0xffefd8, 1.0); dl.position.set(4, 7, 5); sc.add(dl);
+  const cam = new THREE.PerspectiveCamera(30, 2, 0.5, 400);
+  const host = $('hPrev'); host.insertBefore(r.domElement, host.firstChild);
+  prev = { r, sc, cam, model:null, key:'', yaw:0.7, auto:true, drag:null, w:0, h:0 };
+  const el = r.domElement;
+  el.addEventListener('pointerdown', e => { prev.drag = toApp(e).x; prev.auto = false; if (el.setPointerCapture) el.setPointerCapture(e.pointerId); e.preventDefault(); });
+  el.addEventListener('pointermove', e => { if (prev.drag === null) return; const x = toApp(e).x; prev.yaw += (x - prev.drag)*0.012; prev.drag = x; });
+  const up = () => { prev.drag = null; setTimeout(() => { if (prev.drag === null) prev.auto = true; }, 2500); };
+  el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+  return prev;
+}
+function previewPlane(p){
+  ensurePreview();
+  const lo = loadoutFor(p), key = p.id + '|' + lo.msl.id + '|' + lo.bmb.id;
+  if (prev.key === key) return;
+  prev.key = key;
+  if (prev.model) prev.sc.remove(prev.model);
+  const m = buildModel(p);
+  addOrdnance(m, lo.msl, p.look, m.userData.ord); addOrdnance(m, lo.bmb, p.look, m.userData.ordB);
+  prev.model = m; prev.sc.add(m);
+  const span = p.look.span || 11, len = p.look.modern ? 15 : 12;
+  const dist = Math.max(span, len)*2.1 + 4;
+  prev.cam.position.set(0, dist*0.32, dist); prev.cam.lookAt(0, -0.5, 0);
+}
+function renderPreview(dt){
+  if (!prev || !prev.model || $('hangar').hidden) return;
+  const host = $('hPrev'), w = host.clientWidth || 300, h = host.clientHeight || 150;
+  if (w !== prev.w || h !== prev.h){ prev.w = w; prev.h = h; prev.r.setSize(w, h); prev.cam.aspect = w/h; prev.cam.updateProjectionMatrix(); }
+  if (prev.auto) prev.yaw += dt*0.45;
+  prev.model.rotation.set(0.12*Math.sin(time*0.6), prev.yaw, 0);
+  for (const pr of prev.model.userData.props) pr.rotation.z += dt*25;
+  prev.r.render(prev.sc, prev.cam);
 }
 function clearWorld(){
   while (enemies.length) removeEnemy(0);
@@ -2335,7 +2647,10 @@ function startMission(){
   initAudio(); clearWorld();
   resetPlayer(planeById(settings.plane));
   score = 0; kills = 0; wave = 0; overTimer = -1;
-  MS = { phase:-1, next:1.2, baseHits:0, baseHP:MD.baseHP || 0, minShips:MD.minShips || 0, salvos:{}, friendTotal:0, friendLost:0, done:false };
+  buildWorld(MD.endless ? settings.dfMap : MD.map);
+  MS = { phase:-1, next:1.2, baseHits:0, baseHP:MD.baseHP || 0, minShips:MD.minShips || 0, salvos:{}, friendTotal:0, friendLost:0, done:false, usedOrd:false, chPay:0,
+         ch:(pendingCh.length ? pendingCh : rollChallenges(MD)).map(def => ({ def, n:0, done:false })) };
+  lastKillT = -9;
   setTimeOfDay(MD.hour);
   if (MD.convoy) spawnConvoy(MD.convoy);
   if (MD.docked) spawnDocked(MD.docked);
@@ -2344,7 +2659,7 @@ function startMission(){
   showScreen(null); hud.hidden = false;
   banner(MD.endless ? 'Free flight' : 'Mission ' + (mIdx + 1), MD.name, MD.goals[0]);
 }
-function pause(){ if (state !== 'playing') return; gunStop(); state = 'paused'; showScreen('pauseMenu'); input.fire = input.boost = input.sec = false; input.roll = input.pitch = 0; if (AC) AC.suspend(); }
+function pause(){ if (state !== 'playing') return; gunStop(); state = 'paused'; showScreen('pauseMenu'); input.fire = input.boost = input.sec = input.bomb = false; input.roll = input.pitch = 0; if (AC) AC.suspend(); }
 function resume(){ if (state !== 'paused') return; state = 'playing'; showScreen(null); initAudio(); }
 function backToBase(){
   gunStop();
@@ -2373,7 +2688,7 @@ function showResult(won, reason){
       stars = 1 + (hpFrac > 0.5 ? 1 : 0) + (hpFrac > 0.5 && MS.friendLost === 0 && MS.baseHits === 0 ? 1 : 0);
       progress.stars[mIdx] = Math.max(progress.stars[mIdx] || 0, stars);
       if (progress.done === mIdx) progress.done = mIdx + 1;
-      earn(150 + 50*stars);
+      earn(500 + 200*stars);
     }
     const newPlane = won ? PLANES.find(p => p.unlock === mIdx + 1) : null;
     $('oTag').textContent = 'Mission ' + (mIdx + 1) + ' · ' + MD.name;
@@ -2384,6 +2699,11 @@ function showResult(won, reason){
     nb.hidden = !(won && mIdx < MISSIONS.length - 1);
     $('btnToList').textContent = 'Missions';
   }
+  if (won && !MD.endless && MS.ch){
+    for (const c of MS.ch){ if (c.done || !c.def.end) continue; if ((c.def.end === 'hull' && hpFrac >= 0.7) || (c.def.end === 'noord' && !MS.usedOrd)){ c.done = true; earn(c.def.reward); MS.chPay += c.def.reward; } }
+  }
+  const chDone = (MS.ch || []).filter(c => c.done);
+  $('oCh').textContent = MS.ch && MS.ch.length ? 'Challenges: ' + chDone.length + ' of ' + MS.ch.length + ' complete' + (chDone.length ? ' (+' + money(MS.chPay || 0) + ')' + ': ' + chDone.map(c => c.def.text).join('; ') : '') + '.' : '';
   $('oScore').textContent = score.toLocaleString(); $('oKills').textContent = kills; $('oPay').textContent = money(MS.pay || 0);
   showScreen('over');
 }
@@ -2400,7 +2720,7 @@ $('btnAuto').addEventListener('click', () => { toggle('auto'); feed(settings.aut
 $('btnResume').addEventListener('click', resume);
 $('btnQuit').addEventListener('click', () => { if (MD && MD.endless) toMenu(); else toMissions(); });
 $('btnNext').addEventListener('click', () => { const n = mIdx + 1; toMissions(); openBrief(n); });
-$('btnRetry').addEventListener('click', startMission);
+$('btnRetry').addEventListener('click', () => { pendingCh = rollChallenges(MD); startMission(); });
 $('btnToList').addEventListener('click', () => { if (MD && MD.endless) toMenu(); else toMissions(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
 addEventListener('resize', () => {
@@ -2410,6 +2730,7 @@ addEventListener('resize', () => {
 });
 
 /* ---------- loop ---------- */
+buildWorld(settings.dfMap);
 setTimeOfDay(16);
 if (!planeUnlocked(planeById(settings.plane))) settings.plane = 'p51';
 resetPlayer(planeById(settings.plane));
@@ -2429,6 +2750,7 @@ function frame(now){
     updateRockets(dt);
     updateBombs(dt);
     updateParts(dt);
+    updateWeather(dt);
     updateMission(dt);
     if (overTimer > 0){ overTimer -= dt; if (overTimer <= 0){ overTimer = -1; if (!MS.done){ MS.done = true; showResult(false, 'You were shot down.'); } } }
     if (hitFlash > 0) hitFlash = Math.max(0, hitFlash - dt*1.6);
@@ -2448,6 +2770,7 @@ function frame(now){
   }
   updateCamera(state === 'paused' ? 0 : dt);
   if (!hud.hidden) updateHUD(dt);
+  renderPreview(state === 'paused' ? 0 : dt);
   postMat.uniforms.time.value = now/1000;
   if (settings.film === 2){ renderer.setRenderTarget(null); renderer.render(scene, camera); }
   else {
