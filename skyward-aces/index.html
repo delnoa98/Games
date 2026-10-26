@@ -907,6 +907,7 @@ function makeP38(look){
   g.userData = { body, props, ord:[], ordB:[] };
   return g;
 }
+function placed(m, x, y, z){ m.position.set(x, y, z); return m; }
 function makeModernJet(look){
   const g = new THREE.Group(), body = new THREE.Group(); g.add(body);
   const skin = mat(look.color || 0x7d838a, { roughness:.5, metalness:.35 }), dark = mat(0x1d1f22, { metalness:.6, roughness:.4 });
@@ -917,10 +918,10 @@ function makeModernJet(look){
   const half = look.span/2, sh = new THREE.Shape();
   sh.moveTo(-half, -3.0); sh.lineTo(-1.0, look.delta ? 2.6 : 1.6); sh.lineTo(1.0, look.delta ? 2.6 : 1.6); sh.lineTo(half, -3.0); sh.lineTo(half, -3.9); sh.lineTo(-half, -3.9); sh.lineTo(-half, -3.0);
   const wg = new THREE.ExtrudeGeometry(sh, { depth:0.22, bevelEnabled:false }); wg.rotateX(Math.PI/2);
-  body.add(Object.assign(new THREE.Mesh(wg, skin), { position:new V3(0, 0.05, 0) }));
+  body.add(placed(new THREE.Mesh(wg, skin), 0, 0.05, 0));
   const st = new THREE.Shape(); st.moveTo(-2.6, -6.3); st.lineTo(-0.8, -4.6); st.lineTo(0.8, -4.6); st.lineTo(2.6, -6.3); st.lineTo(2.6, -6.9); st.lineTo(-2.6, -6.9); st.lineTo(-2.6, -6.3);
   const sg = new THREE.ExtrudeGeometry(st, { depth:0.14, bevelEnabled:false }); sg.rotateX(Math.PI/2);
-  body.add(Object.assign(new THREE.Mesh(sg, skin), { position:new V3(0, 0.0, 0) }));
+  body.add(placed(new THREE.Mesh(sg, skin), 0, 0.0, 0));
   const fins = look.twinTail ? [-1.1, 1.1] : [0];
   for (const fx of fins){
     const f = new THREE.Mesh(finGeo(2.3, 2.6, 0.7), skin); f.position.set(fx, 0.35, -4.4); f.rotation.z = fx ? -Math.sign(fx)*0.4 : 0; body.add(f);
@@ -947,7 +948,7 @@ function makeMeteor(look){
   const glass = new THREE.Mesh(new THREE.SphereGeometry(0.55, 18, 12), glassMat); glass.scale.set(0.8, 0.75, 1.9); glass.position.set(0, 0.66, 2.4); body.add(glass);
   const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 10, 8), mat(0x3a2e22)); head.position.set(0, 0.72, 2.3); body.add(head);
   const wg = wingGeo('taper', look.span, 3.0, 0.32, 0.04); camo(wg, P.camo[0], P.camo[1], 0.5, 3);
-  body.add(Object.assign(new THREE.Mesh(wg, skin), { position:new V3(0, -0.2, 0.6) }));
+  body.add(placed(new THREE.Mesh(wg, skin), 0, -0.2, 0.6));
   for (const sx of [-1, 1]){
     const ng = new THREE.LatheGeometry([[0.4,-2.6],[0.6,-2.2],[0.74,-0.5],[0.76,1.6],[0.66,2.6]].map(p => new THREE.Vector2(p[0], p[1])), 16); ng.rotateX(Math.PI/2); camo(ng, P.camo[0], P.camo[1], 0.6, 5);
     const nac = new THREE.Mesh(ng, skin); nac.position.set(sx*2.8, -0.15, 0.4); body.add(nac);
@@ -959,7 +960,7 @@ function makeMeteor(look){
   }
   const fin = new THREE.Mesh(finGeo(2.4, 2.2, 0.8), mat(P.camo[1], { roughness:.7, metalness:.15 })); fin.position.set(0, 0.2, -5.0); body.add(fin);
   const sg = wingGeo('taper', 5.2, 1.4, 0.14, 0); camo(sg, P.camo[0], P.camo[1], 0.5, 5);
-  body.add(Object.assign(new THREE.Mesh(sg, skin), { position:new V3(0, 1.55, -5.7) }));
+  body.add(placed(new THREE.Mesh(sg, skin), 0, 1.55, -5.7));
   g.userData = { body, props:[], ord:[], ordB:[] };
   return g;
 }
