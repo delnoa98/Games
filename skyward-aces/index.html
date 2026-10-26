@@ -2624,8 +2624,8 @@ function previewPlane(p){
   addOrdnance(m, lo.msl, p.look, m.userData.ord); addOrdnance(m, lo.bmb, p.look, m.userData.ordB);
   prev.model = m; prev.sc.add(m);
   const span = p.look.span || 11, len = p.look.modern ? 15 : 12;
-  const dist = Math.max(span, len)*2.1 + 4;
-  prev.cam.position.set(0, dist*0.32, dist); prev.cam.lookAt(0, -0.5, 0);
+  const dist = Math.max(span, len)*1.45 + 3;
+  prev.cam.position.set(0, dist*0.34, dist); prev.cam.lookAt(0, -0.3, 0);
 }
 function renderPreview(dt){
   if (!prev || !prev.model || $('hangar').hidden) return;
