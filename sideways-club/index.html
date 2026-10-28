@@ -170,6 +170,22 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
 #joyKnob{position:absolute;left:50%;top:50%;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;background:rgba(238,240,243,.85);box-shadow:0 4px 14px rgba(0,0,0,.4)}
 #rotHint{display:none;position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 120px);transform:translateX(-50%);background:rgba(13,16,21,.8);border:1px solid var(--rule);padding:8px 14px;border-radius:999px;font-size:13px;white-space:nowrap}
 @media (orientation:portrait) and (pointer:coarse){#rotHint{display:block}}
+.menu-corner{gap:8px}
+.cheat-body{flex:1;min-height:0;overflow-y:auto;touch-action:pan-y;display:flex;flex-direction:column;gap:12px;width:100%;max-width:680px;margin:0 auto}
+.cheat-form{display:flex;gap:10px;flex:none}
+.cheat-form input{flex:1;min-width:0;background:var(--panel);border:1px solid var(--rule);border-radius:10px;color:var(--fg);font:700 18px var(--f-body);letter-spacing:.2em;text-transform:uppercase;padding:10px 14px;-webkit-user-select:text;user-select:text}
+.cheat-form input::placeholder{letter-spacing:.06em;text-transform:none;color:var(--mute);font-weight:600}
+.cheat-form input:focus{outline:2px solid var(--cyan);outline-offset:2px}
+.cheat-head{display:flex;justify-content:space-between;gap:10px}
+.cheat-list{display:flex;flex-direction:column;gap:10px}
+.crow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;align-items:center;background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:10px 14px}
+.crow h4{margin:0;font-size:15px}
+.crow code{font:700 11px var(--f-body);letter-spacing:.2em;color:var(--sodium)}
+.crow p{margin:0;color:var(--mute);font-size:13px;line-height:1.35}
+.crow .btn{grid-row:1/span 3;grid-column:2;min-width:96px}
+.btn.on{background:var(--ok);color:#06210f}
+.cheat-empty{margin:0;color:var(--mute);line-height:1.45}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 #note{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%) translateY(20px);z-index:30;background:var(--fg);color:#111;font-weight:700;padding:10px 18px;border-radius:999px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;white-space:nowrap;font-size:14px}
 #note.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #note.bad{background:var(--danger);color:#fff}
@@ -233,7 +249,7 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
     </div>
     <p class="menu-foot">Steer with the stick on the left. Gas, e-brake and boost are on the right. Turn hard at speed or hit the e-brake to start a slide, then steer into it to hold the angle. Too much angle for too long and you spin. Better cars and upgrades make drifting easier. Link drifts to climb to ×5. Leave the road or hit the wall and the chain is gone.</p>
   </div>
-  <div class="menu-corner"><button id="soundBtn" class="icon-btn">Sound on</button></div>
+  <div class="menu-corner"><button id="cheatsBtn" class="icon-btn">Cheats</button><button id="soundBtn" class="icon-btn">Sound on</button></div>
 </section>
 
 <section id="tracks" class="screen panel-screen" hidden>
@@ -266,6 +282,23 @@ button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
       </div>
       <div class="tab-body" id="gBody"></div>
     </div>
+  </div>
+</section>
+
+<section id="cheats" class="screen panel-screen" hidden>
+  <header class="bar">
+    <button class="icon-btn" data-back>‹ Back</button>
+    <h2>Cheat codes</h2>
+    <span class="coins-pill"><i class="coin"></i><b data-coins>0</b></span>
+  </header>
+  <div class="cheat-body">
+    <form id="cheatForm" class="cheat-form" autocomplete="off">
+      <label class="sr" for="cheatInput">Cheat code</label>
+      <input id="cheatInput" type="text" maxlength="16" placeholder="Enter a code" autocapitalize="characters" autocorrect="off" spellcheck="false" enterkeyhint="go">
+      <button class="btn primary small" type="submit">Enter</button>
+    </form>
+    <div class="cheat-head"><span class="eyebrow">Codes you've found</span><span class="eyebrow" id="cheatCount">0 found</span></div>
+    <div id="cheatList" class="cheat-list"></div>
   </div>
 </section>
 
@@ -403,7 +436,7 @@ const VIEWS = [
 /* ================= SAVE ================= */
 const SAVE_KEY = 'sideways-club-v1';
 function defaultSave() {
-  return { coins: 250, cars: ['pebble'], car: 'pebble', up: {}, style: {}, owned: { paint: ['p0', 'p1', 'p2'], smoke: ['s0'], glow: ['g0'], stripe: ['d0'] }, tracks: ['harbor'], best: {}, lastTrack: 'harbor', sound: true, view: 0 };
+  return { coins: 250, cars: ['pebble'], car: 'pebble', up: {}, style: {}, owned: { paint: ['p0', 'p1', 'p2'], smoke: ['s0'], glow: ['g0'], stripe: ['d0'] }, tracks: ['harbor'], best: {}, lastTrack: 'harbor', sound: true, view: 0, cheats: {}, found: [] };
 }
 function load() {
   try { const r = localStorage.getItem(SAVE_KEY); if (r) { const d = JSON.parse(r); const base = defaultSave(); return Object.assign(base, d, { owned: Object.assign(base.owned, d.owned || {}) }); } } catch (e) {}
@@ -411,6 +444,10 @@ function load() {
 }
 let S = load();
 if (!(S.view >= 0 && S.view < VIEWS.length)) S.view = 0;
+if (!S.cheats || typeof S.cheats !== 'object') S.cheats = {};
+if (!Array.isArray(S.found)) S.found = [];
+const cheatOn = k => !!S.cheats[k];
+const canAfford = n => cheatOn('money') || S.coins >= n;
 function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {} }
 function upOf(id) { return S.up[id] || (S.up[id] = { e: 0, t: 0, h: 0 }); }
 function styleOf(id) { return S.style[id] || (S.style[id] = { paint: CAR_BY[id].defPaint, smoke: 's0', glow: 'g0', stripe: 'd0' }); }
@@ -419,12 +456,12 @@ function carStats(id) {
   return { power: c.power * (1 + .08 * u.e), maxSpd: c.maxSpd * (1 + .045 * u.e), boostCap: 1 + .4 * u.t, boostPow: 380 + 70 * u.t, turn: c.turn * (1 + .06 * u.h), grip: c.grip * (1 + .05 * u.h), drift: c.drift, ease: driftEase(id) };
 }
 // 0 = hardest to start and hold a drift, 1 = easiest. Better cars and every upgrade level add to it.
-function driftEase(id) { const c = CAR_BY[id], u = upOf(id); return clamp(c.ease + (u.e + u.t + u.h) / 11 * .15, 0, 1); }
+function driftEase(id) { if (cheatOn('drift')) return 1; const c = CAR_BY[id], u = upOf(id); return clamp(c.ease + (u.e + u.t + u.h) / 11 * .15, 0, 1); }
 const ez = (hard, easy) => lerp(hard, easy, car.st ? car.st.ease : 0);
 const lowTier = () => clamp(1 - (car.st ? car.st.ease : 0) / .45, 0, 1);
 function upCost(carId, k, lvl) { const tier = CARS.findIndex(c => c.id === carId); const b = UPG.find(u => u.k === k).base; return Math.round(b * (lvl + 1) * (1 + tier * .6) / 10) * 10; }
-function refreshCoins() { document.querySelectorAll('[data-coins]').forEach(e => e.textContent = fmt(S.coins)); }
-function spend(n) { if (S.coins < n) { note(`You need ${fmt(n - S.coins)} more coins`, true); return false; } S.coins -= n; save(); refreshCoins(); return true; }
+function refreshCoins() { const t = cheatOn('money') ? '∞' : fmt(S.coins); document.querySelectorAll('[data-coins]').forEach(e => e.textContent = t); }
+function spend(n) { if (cheatOn('money')) return true; if (S.coins < n) { note(`You need ${fmt(n - S.coins)} more coins`, true); return false; } S.coins -= n; save(); refreshCoins(); return true; }
 
 /* ================= TRACK DATA ================= */
 const built = {};
@@ -988,8 +1025,8 @@ function startRace(id) {
   ensureWorld(id); S.lastTrack = id; viewTrackId = id; save();
   const N = T.s.length, i0 = N - 8, p = T.s[i0];
   setCar(S.car); ensureCarMesh();
-  Object.assign(car, { x: p.x, y: p.y, h: p.a, vx: 0, vy: 0, yaw: 0, off: false, offT: 0, idx: i0, prevIdx: i0, boost: car.st.boostCap * .5, boosting: false, braking: false, drifting: false, ang: 0, wheels: null, drift: 0, slip: 0, exitT: 0, flick: 0, roll: 0, pitch: 0 });
-  R = { id, t: RUN_TIME, score: 0, chainPts: 0, chainT: 0, mult: 1, driftT: 0, laps: 0, half: false, bestChain: 0, count: 3.5, paused: false, over: false, goT: 0 };
+  Object.assign(car, { x: p.x, y: p.y, h: p.a, vx: 0, vy: 0, yaw: 0, off: false, offT: 0, idx: i0, prevIdx: i0, boost: car.st.boostCap * (cheatOn('boost') ? 1 : .5), boosting: false, braking: false, drifting: false, ang: 0, wheels: null, drift: 0, slip: 0, exitT: 0, flick: 0, roll: 0, pitch: 0 });
+  R = { id, t: cheatOn('time') ? 300 : RUN_TIME, score: 0, chainPts: 0, chainT: 0, mult: 1, driftT: 0, laps: 0, half: false, bestChain: 0, count: 3.5, paused: false, over: false, goT: 0 };
   clearSkids(); smoke = [];
   snapCam();
   mode = 'race'; showScreen(null); $('#hud').hidden = false; $('#chain').hidden = true;
@@ -1028,7 +1065,7 @@ function physics(dt) {
   const k = st.power / st.maxSpd;
   car.boosting = input.boost && car.boost > .02;
   let thrust = input.gas ? st.power : 0;
-  if (car.boosting) { thrust += st.boostPow; car.boost = Math.max(0, car.boost - .42 * dt); }
+  if (car.boosting) { thrust += st.boostPow; if (!cheatOn('boost')) car.boost = Math.max(0, car.boost - .42 * dt); }
   const offDrag = car.off ? 3.2 : 1;
   if (car.drift === 0) {
     const fx = Math.cos(car.h), fy = Math.sin(car.h), rx = -fy, ry = fx;
@@ -1411,11 +1448,12 @@ function updateAudio(dt) {
 }
 
 /* ================= SCREENS ================= */
-const screens = ['menu', 'tracks', 'garage', 'pause', 'results'];
+const screens = ['menu', 'tracks', 'garage', 'pause', 'results', 'cheats'];
 function showScreen(id) {
   for (const s of screens) $('#' + s).hidden = s !== id;
   if (id === 'garage') requestAnimationFrame(() => { resize(); renderGarage(); });
   if (id === 'tracks') renderTracks();
+  if (id === 'cheats') renderCheats();
   refreshCoins();
 }
 document.querySelectorAll('[data-back]').forEach(b => b.addEventListener('click', () => showScreen('menu')));
@@ -1425,6 +1463,45 @@ function syncSoundBtn() { $('#soundBtn').textContent = S.sound ? 'Sound on' : 'S
 $('#soundBtn').onclick = () => { S.sound = !S.sound; save(); syncSoundBtn(); if (S.sound) { audioInit(); AC && AC.resume(); } else if (AC) AC.suspend(); };
 document.addEventListener('pointerdown', () => { if (AC && AC.state === 'suspended' && S.sound) AC.resume(); audioInit(); }, { passive: true });
 function togglePause() { if (!R || R.over) return; R.paused = !R.paused; showScreen(R.paused ? 'pause' : null); }
+/* ---------- cheat codes ---------- */
+const CHEATS = [
+  { code: 'MONEYBAGS', key: 'money', name: 'Unlimited coins', desc: 'Cars, upgrades, paint and tracks are all free.' },
+  { code: 'NITROUS', key: 'boost', name: 'Endless boost', desc: 'The boost tank never runs dry.' },
+  { code: 'BUTTER', key: 'drift', name: 'Easy drift', desc: 'Every car drifts like a maxed-out Mirage RS.' },
+  { code: 'OVERTIME', key: 'time', name: 'Long runs', desc: 'Runs last 5 minutes instead of 1:30.' },
+  { code: 'PAYDAY', name: 'Payday', desc: 'Adds 50,000 coins.', run() { S.coins += 50000; } },
+  { code: 'FULLGARAGE', name: 'Every car', desc: 'Puts all five cars in your garage.', run() { S.cars = CARS.map(c => c.id); } },
+  { code: 'MAXEDOUT', name: 'Max upgrades', desc: 'Engine, Turbo and Handling maxed on every car.', run() { for (const c of CARS) { const u = upOf(c.id); for (const g of UPG) u[g.k] = g.max; } } },
+  { code: 'DRIPCHECK', name: 'Every cosmetic', desc: 'Unlocks all paint, tire smoke, underglow and liveries.', run() { for (const k in COS) S.owned[k] = COS[k].map(i => i.id); } },
+  { code: 'KEYMASTER', name: 'Every track', desc: 'Unlocks all five tracks.', run() { S.tracks = TRACKS.map(t => t.id); } },
+];
+const CHEAT_BY = Object.fromEntries(CHEATS.map(c => [c.code, c]));
+function renderCheats() {
+  const list = $('#cheatList'), found = CHEATS.filter(c => S.found.includes(c.code));
+  $('#cheatCount').textContent = `${found.length} of ${CHEATS.length} found`;
+  if (!found.length) { list.innerHTML = '<p class="cheat-empty">No codes found yet. Type one above and tap Enter.</p>'; return; }
+  list.innerHTML = found.map(c => {
+    const on = c.key && cheatOn(c.key);
+    const btn = c.key ? `<button class="btn small ${on ? 'on' : 'ghost'}" data-cheat="${c.code}" aria-pressed="${on}">${on ? 'On' : 'Off'}</button>`
+                      : `<button class="btn small ghost" data-cheat="${c.code}">Use again</button>`;
+    return `<div class="crow"><h4>${c.name}</h4><code>${c.code}</code><p>${c.desc}</p>${btn}</div>`;
+  }).join('');
+}
+function applyCheat(c, fromList) {
+  if (c.key) { S.cheats[c.key] = fromList ? !cheatOn(c.key) : true; note(`${c.name} ${cheatOn(c.key) ? 'on' : 'off'}`); }
+  else { c.run(); note(`${c.name} done`); }
+  if (!S.found.includes(c.code)) S.found.push(c.code);
+  save(); refreshCoins(); renderCheats();
+}
+$('#cheatForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const inp = $('#cheatInput'), code = inp.value.toUpperCase().replace(/[^A-Z0-9]/g, ''), c = CHEAT_BY[code];
+  if (!code) return;
+  if (!c) { note('Unknown code. Check the spelling and try again.', true); inp.select(); return; }
+  inp.value = ''; inp.blur(); applyCheat(c, false);
+});
+$('#cheatList').addEventListener('click', e => { const b = e.target.closest('[data-cheat]'); if (b) applyCheat(CHEAT_BY[b.dataset.cheat], true); });
+$('#cheatsBtn').onclick = () => showScreen('cheats');
 $('#pauseBtn').onclick = togglePause;
 $('#viewBtn').onclick = cycleView;
 $('#pResume').onclick = togglePause;
@@ -1456,7 +1533,7 @@ function renderTracks() {
     const btn = c.querySelector('button');
     btn.onclick = () => {
       if (owned) { startRace(d.id); return; }
-      if (S.coins < d.price) { note(`You need ${fmt(d.price - S.coins)} more coins`, true); return; }
+      if (!canAfford(d.price)) { note(`You need ${fmt(d.price - S.coins)} more coins`, true); return; }
       confirmTap(btn, `Confirm · ${fmt(d.price)}`, () => { if (spend(d.price)) { S.tracks.push(d.id); save(); note(`${d.name} unlocked`); viewTrackId = d.id; renderTracks(); } });
     };
     c.addEventListener('click', e => { if (e.target !== btn && owned) viewTrackId = d.id; });
@@ -1525,7 +1602,7 @@ function renderGarage() {
 $('#gBody').addEventListener('click', e => {
   const b = e.target.closest('[data-act]'); if (!b) return; const c = CARS[gIdx], act = b.dataset.act;
   if (act === 'buy') {
-    if (S.coins < c.price) { note(`You need ${fmt(c.price - S.coins)} more coins`, true); return; }
+    if (!canAfford(c.price)) { note(`You need ${fmt(c.price - S.coins)} more coins`, true); return; }
     confirmTap(b, `Confirm · ${fmt(c.price)}`, () => { if (spend(c.price)) { S.cars.push(c.id); S.car = c.id; save(); note(`${c.name} is in your garage`); renderGarage(); } });
   } else if (act === 'select') { S.car = c.id; save(); note(`Driving the ${c.name}`); renderGarage(); }
   else if (act === 'up') {
